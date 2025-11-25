@@ -26,18 +26,50 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
 .btn-primary:hover{background:#054b73}
 .btn-sec{background:#fff;border:1px solid #e6eef7}
 .btn-green{background:var(--success);color:white}
+.btn-danger{background:var(--danger);color:white}
 .small{font-size:13px;color:var(--muted);}
 .resultTitle{font-weight:700;margin:0 0 6px 0}
 .resultBox{background:#07122a;color:#e6fffb;padding:14px;border-radius:10px;white-space:pre-wrap;font-family:monospace}
+
+/* MODAL & OVERLAY */
 #overlay{display:none;position:fixed;inset:0;background:rgba(2,6,23,0.45);z-index:60}
-#modal{display:none;position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:460px;max-width:94%;z-index:70;border-radius:12px;padding:18px;background:var(--card);box-shadow:0 20px 60px rgba(2,6,23,0.25);max-height:86vh;overflow:auto}
-.modalHeader{display:flex;justify-content:space-between;align-items:center}
+#modal{display:none;position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:500px;max-width:94%;z-index:70;border-radius:12px;padding:18px;background:var(--card);box-shadow:0 20px 60px rgba(2,6,23,0.25);max-height:90vh;overflow:auto}
+.modalHeader{display:flex;justify-content:space-between;align-items:center; margin-bottom: 10px;}
 .modalClose{background:transparent;border:none;color:var(--muted);font-weight:700;cursor:pointer}
 .note{font-size:13px;color:var(--muted);margin-top:6px}
+
+/* INSTALAÇÕES NO MODAL */
+.install-list { margin-top: 15px; border-top: 1px solid #e6eef7; padding-top: 10px; }
+.install-item { background: #f8fafc; border: 1px solid #e2e8f0; padding: 10px; border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+.install-item strong { display: block; font-size: 14px; color: #334155; }
+.install-item span { font-size: 12px; color: #64748b; }
+.section-title { font-size: 14px; font-weight: 700; color: var(--accent-darker); margin-top: 20px; border-bottom: 2px solid #e6eef7; padding-bottom: 5px; margin-bottom: 10px; }
+
+/* TOAST NOTIFICATIONS */
+.toast-container { position: fixed; top: 20px; right: 20px; z-index: 1000; display: flex; flex-direction: column; gap: 10px; }
+.toast { padding: 12px 20px; border-radius: 8px; color: white; box-shadow: 0 4px 12px rgba(0,0,0,0.15); font-size: 14px; display: flex; align-items: center; animation: slideIn 0.3s ease; min-width: 250px;}
+.toast.success { background: var(--success); }
+.toast.error { background: var(--danger); }
+.toast.info { background: var(--btn); }
+@keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+/* AUTOCOMPLETE SUGGESTIONS */
+.suggestions-box { position: absolute; background: white; width: 100%; border: 1px solid #e2e8f0; border-radius: 0 0 10px 10px; max-height: 200px; overflow-y: auto; z-index: 50; margin-top: 2px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: none; }
+.suggestion-item { padding: 10px; cursor: pointer; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
+.suggestion-item:hover { background: #f1f5f9; }
+.relative { position: relative; }
+
+/* OR SEPARATOR STYLE */
+.separator-box { margin: 15px 0; border-bottom: 1px solid #e6eef7; position: relative; text-align: center; }
+.separator-text { background: white; padding: 0 10px; color: #999; font-size: 12px; position: relative; top: 8px; }
+
 @media (max-width:900px){.grid{grid-template-columns:1fr; }.title h1{font-size:18px}}
 </style>
 </head>
 <body>
+
+<div id="toast-container" class="toast-container"></div>
+
 <div class="container">
 
   <div class="header">
@@ -56,6 +88,17 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
 
   <div class="grid" id="gridPrincipal">
     <div class="card">
+        
+      <label style="color:var(--accent-darker); font-weight:700">🔍 Busca Rápida</label>
+      <div class="relative">
+          <input id="mainSearchInput" placeholder="Digite ex: Uno Way 2020..." autocomplete="off">
+          <div id="mainSuggestions" class="suggestions-box"></div>
+      </div>
+
+      <div class="separator-box">
+          <span class="separator-text">OU FILTRE ABAIXO</span>
+      </div>
+
       <label>Tipo do veículo</label>
       <select id="tipoSelect">
         <option value="">-- selecione --</option>
@@ -92,7 +135,17 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
 
     <div class="card">
       <h3 class="resultTitle">Resultado</h3>
+      
+      <div id="seletorLocalWrap" style="display:none; margin-bottom: 15px; padding: 10px; background: #eff6ff; border-radius: 8px;">
+        <label style="color: #1e3a8a; font-weight: bold; margin-top:0;">Opção de Local de Instalação:</label>
+        <select id="resultadoLocalSelect" style="background: white; border: 1px solid #bfdbfe; color: #1e3a8a; font-weight: 600;">
+        </select>
+      </div>
+
       <div id="resultado" class="resultBox" style="font-family:Verdana;font-size:20px;">Carregando sistema...</div>
+      
+      <div id="btnEditarResultado" style="margin-top:10px;text-align:right;display:none">
+         </div>
     </div>
   </div>
 
@@ -101,29 +154,38 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
       <div class="row" style="justify-content:flex-end;margin-bottom:8px;">
         <button class="btn btn-sec" onclick="voltarBusca()">Voltar à Busca</button>
       </div>
-      <h3>Veículos cadastrados (Firebase)</h3>
+      
+      <h3>Gerenciar Veículos</h3>
 
-      <label>Tipo</label>
-      <select id="editTipo">
-        <option value="">-- todos --</option>
-        <option value="carro">Carro</option>
-        <option value="moto">Moto</option>
-        <option value="caminhao">Caminhão</option>
-      </select>
+      <label style="color:var(--accent-darker); font-weight:700">🔍 Busca Rápida (Lista)</label>
+      <input id="editSearchInput" placeholder="Digite ex: Honda Civic 2020..." onkeyup="filtrarEdicao()">
 
-      <label>Marca</label>
-      <select id="editMarca"><option value="">-- todos --</option></select>
+      <div class="separator-box">
+          <span class="separator-text">OU FILTRE ABAIXO</span>
+      </div>
 
-      <label>Modelo</label>
-      <select id="editModelo"><option value="">-- todos --</option></select>
-
-      <label>Submodelo</label>
-      <select id="editSub"><option value="">-- todos --</option></select>
-
-      <label>Ano</label>
-      <select id="editAno"><option value="">-- todos --</option></select>
-
-      <button class="btn btn-primary" style="margin-top:8px;" onclick="filtrarEdicao()">Filtrar</button>
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap:10px; margin-top:10px">
+          <div>
+            <label>Tipo</label>
+            <select id="editTipo" style="margin-top:0"><option value="">-- todos --</option><option value="carro">Carro</option><option value="moto">Moto</option><option value="caminhao">Caminhão</option></select>
+          </div>
+          <div>
+              <label>Marca</label>
+              <select id="editMarca" style="margin-top:0"><option value="">-- todos --</option></select>
+          </div>
+          <div>
+              <label>Modelo</label>
+              <select id="editModelo" style="margin-top:0"><option value="">-- todos --</option></select>
+          </div>
+          <div>
+              <label>Submodelo</label>
+              <select id="editSub" style="margin-top:0"><option value="">-- todos --</option></select>
+          </div>
+          <div>
+              <label>Ano</label>
+              <select id="editAno" style="margin-top:0"><option value="">-- todos --</option></select>
+          </div>
+      </div>
 
       <div id="listaVeiculos" style="margin-top:12px;"></div>
     </div>
@@ -137,48 +199,54 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
     <strong id="modalTitle">Cadastrar veículo</strong>
     <button class="modalClose" onclick="fecharModal()">X</button>
   </div>
+  <p class="note">Preencha os dados do veículo e adicione as opções de instalação.</p>
 
-  <p class="note">Preencha os campos e clique em salvar. Dados salvos no Firebase.</p>
+  <div class="section-title">1. Dados do Veículo</div>
+  <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 0;">
+      <div><label>Tipo</label><select id="addTipo"><option value="carro">Carro</option><option value="moto">Moto</option><option value="caminhao">Caminhão</option></select></div>
+      <div><label>Marca</label><select id="addMarca"></select></div>
+  </div>
+  <label>Modelo</label><input id="addModelo">
+  <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 0;">
+    <div><label>Submodelo</label><input id="addSubmodelo"></div>
+    <div><label>Ano</label><input id="addAno" type="number"></div>
+  </div>
 
-  <label>Tipo</label>
-  <select id="addTipo">
-    <option value="carro">Carro</option>
-    <option value="moto">Moto</option>
-    <option value="caminhao">Caminhão</option>
-  </select>
+  <div class="section-title">2. Adicionar Opção de Instalação</div>
+  <div style="background: #f1f5f9; padding: 12px; border-radius: 8px;">
+      <label style="color:#0f172a; font-weight:700">Nome do Local (Ex: Caixa de Fusíveis)</label>
+      <input id="addNomeLocal" placeholder="Ex: Painel, Caixa de Fusíveis, Airbag...">
+      
+      <label>Local Detalhado (Opcional)</label>
+      <input id="addLocalDetalhe" placeholder="Ex: Abaixo do volante, fio grosso">
 
-  <label>Marca</label>
-  <select id="addMarca"></select>
+      <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 0;">
+        <div><label>Positivo</label><input id="addPositivo"></div>
+        <div><label>Negativo</label><input id="addNegativo"></div>
+      </div>
+      <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 0;">
+        <div><label>Pós-chave</label><input id="addPosChave"></div>
+        <div><label>Bloqueio</label><input id="addBloqueio"></div>
+      </div>
 
-  <label>Modelo</label>
-  <input id="addModelo">
+      <button class="btn btn-sec" style="width:100%; margin-top:10px; border-color:var(--accent); color:var(--accent-darker)" onclick="adicionarInstalacaoNaLista()">+ Adicionar esta Opção</button>
+  </div>
 
-  <label>Submodelo</label>
-  <input id="addSubmodelo">
+  <div class="section-title">Opções Adicionadas (<span id="countInstalacoes">0</span>)</div>
+  <div id="listaInstalacoesAdd" class="install-list">
+      <div style="text-align:center; color:var(--muted); font-size:13px;">Nenhuma opção adicionada ainda.</div>
+  </div>
 
-  <label>Ano</label>
-  <input id="addAno" type="number">
-
-  <label>Local de instalação</label>
-  <input id="addLocal">
-  <label>Positivo</label><input id="addPositivo">
-  <label>Negativo</label><input id="addNegativo">
-  <label>Pós-chave</label><input id="addPosChave">
-  <label>Bloqueio</label><input id="addBloqueio">
-
-  <div class="row" style="justify-content:flex-end;margin-top:14px">
-    <button class="btn btn-green" id="btnSalvar">Salvar</button>
+  <div class="row" style="justify-content:flex-end;margin-top:14px; border-top: 2px solid #ddd; padding-top:10px;">
     <button class="btn btn-sec" onclick="fecharModal()">Cancelar</button>
+    <button class="btn btn-green" id="btnSalvar">Salvar Veículo Completo</button>
   </div>
 </div>
 
 <script type="module">
   /* ================= FIREBASE SETUP ================= */
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-analytics.js";
-  import { 
-    getFirestore, collection, getDocs, addDoc, updateDoc, doc 
-  } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+  import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyB097Hr3Vg55djiCjW8A3m_vhK4Jen-Xlw",
@@ -191,14 +259,15 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
   };
 
   const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
   const dbFirestore = getFirestore(app);
   const veiculosCollection = collection(dbFirestore, "veiculos");
 
   /* ================= VARIÁVEIS GLOBAIS ================= */
-  let userDB = []; // Dados vindos do Firebase
-  let db = []; // Cópia usada para buscas
-  let editarIndex = null; // ID do documento sendo editado
+  let userDB = []; 
+  let db = [];
+  let editarIndex = null;
+  let tempInstalacoes = [];
+  let currentVehicleResult = null;
 
   const marcas = {
     carro:["Fiat","Volkswagen","Chevrolet","Toyota","Ford","Renault","Peugeot","Citroën","Honda","Hyundai","Land Rover","Ram","BYD"],
@@ -208,6 +277,28 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
 
   const $ = id => document.getElementById(id);
 
+  /* ================= NOTIFICATION SYSTEM (TOAST) ================= */
+  window.showNotification = function(message, type = 'info') {
+      const container = $("toast-container");
+      const toast = document.createElement("div");
+      toast.className = `toast ${type}`;
+      
+      let icon = '';
+      if(type === 'success') icon = '✅ ';
+      if(type === 'error') icon = '❌ ';
+      if(type === 'info') icon = 'ℹ️ ';
+
+      toast.innerHTML = `<span>${icon} ${message}</span>`;
+      container.appendChild(toast);
+
+      setTimeout(() => {
+          toast.style.opacity = '0';
+          toast.style.transform = 'translateX(100%)';
+          toast.style.transition = 'all 0.3s ease';
+          setTimeout(() => toast.remove(), 300);
+      }, 3500);
+  };
+
   /* ================= CARREGAMENTO INICIAL ================= */
   async function carregarDadosDoFirebase() {
     $("resultado").innerText = "Carregando banco de dados...";
@@ -215,12 +306,10 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
       const querySnapshot = await getDocs(veiculosCollection);
       userDB = [];
       querySnapshot.forEach((doc) => {
-        // Junta o ID do documento com os dados
         userDB.push({ id: doc.id, ...doc.data() });
       });
-      db = [...userDB]; // Atualiza lista local
+      db = [...userDB]; 
       $("resultado").innerText = "Sistema pronto. Faça sua busca.";
-      // Se estiver na tela de edição, atualiza a lista
       if($("editarAba").style.display === "block") {
           popularFiltros();
           renderLista();
@@ -228,21 +317,24 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
     } catch (e) {
       console.error("Erro ao ler dados: ", e);
       $("resultado").innerText = "Erro ao conectar com servidor.";
+      showNotification("Erro de conexão com o servidor", "error");
     }
   }
-
-  // Inicia carregamento
   carregarDadosDoFirebase();
 
-  /* ================= FUNÇÕES DE UI (EXPOSTAS PARA O HTML) ================= */
+  /* ================= UI FUNCTIONS ================= */
 
   window.abrirCadastro = function() {
     editarIndex = null;
+    tempInstalacoes = [];
     $("modalTitle").innerText = "Cadastrar veículo";
     $("addTipo").value = "carro";
     preencherAddMarca();
-    ["addMarca","addModelo","addSubmodelo","addAno","addLocal",
-     "addPositivo","addNegativo","addPosChave","addBloqueio"].forEach(id => $(id).value = "");
+    
+    ["addMarca","addModelo","addSubmodelo","addAno"].forEach(id => $(id).value = "");
+    limparCamposInstalacao();
+    renderTempInstalacoes();
+
     $("overlay").style.display = "block";
     $("modal").style.display = "block";
   };
@@ -251,6 +343,7 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
     $("overlay").style.display = "none";
     $("modal").style.display = "none";
     editarIndex = null;
+    tempInstalacoes = [];
   };
 
   window.abrirEditar = function() {
@@ -265,47 +358,202 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
     $("gridPrincipal").style.display = "grid";
   };
 
+  function limparCamposInstalacao() {
+    ["addNomeLocal", "addLocalDetalhe", "addPositivo", "addNegativo", "addPosChave", "addBloqueio"].forEach(id => $(id).value = "");
+  }
+
+  /* ================= LÓGICA DE INSTALAÇÕES (MODAL) ================= */
+  
+  window.adicionarInstalacaoNaLista = function() {
+    const nome = $("addNomeLocal").value.trim();
+    if(!nome) { showNotification("Dê um nome para o local (ex: Painel).", "error"); return; }
+    
+    const novaInstalacao = {
+      nomeLocal: nome,
+      localDetalhe: $("addLocalDetalhe").value.trim(),
+      positivo: $("addPositivo").value.trim(),
+      negativo: $("addNegativo").value.trim(),
+      posChave: $("addPosChave").value.trim(),
+      bloqueio: $("addBloqueio").value.trim()
+    };
+
+    tempInstalacoes.push(novaInstalacao);
+    renderTempInstalacoes();
+    limparCamposInstalacao();
+    showNotification("Opção de instalação adicionada!", "success");
+  };
+
+  window.removerInstalacaoTemp = function(index) {
+    tempInstalacoes.splice(index, 1);
+    renderTempInstalacoes();
+  };
+
+  // NOVA FUNÇÃO DE EDIÇÃO INDIVIDUAL DA INSTALAÇÃO
+  window.editarInstalacaoTemp = function(index) {
+      const item = tempInstalacoes[index];
+      
+      // Joga os valores de volta para os inputs
+      $("addNomeLocal").value = item.nomeLocal;
+      $("addLocalDetalhe").value = item.localDetalhe;
+      $("addPositivo").value = item.positivo;
+      $("addNegativo").value = item.negativo;
+      $("addPosChave").value = item.posChave;
+      $("addBloqueio").value = item.bloqueio;
+
+      // Remove da lista para o usuário "Adicionar" novamente corrigido
+      tempInstalacoes.splice(index, 1);
+      renderTempInstalacoes();
+      
+      showNotification("Dados carregados. Edite e clique em '+ Adicionar' novamente.", "info");
+      $("addNomeLocal").focus();
+  };
+
+  function renderTempInstalacoes() {
+    const container = $("listaInstalacoesAdd");
+    $("countInstalacoes").innerText = tempInstalacoes.length;
+    
+    if(tempInstalacoes.length === 0) {
+      container.innerHTML = "<div style='text-align:center; color:var(--muted); font-size:13px;'>Nenhuma opção adicionada ainda.</div>";
+      return;
+    }
+
+    container.innerHTML = "";
+    tempInstalacoes.forEach((inst, index) => {
+      let div = document.createElement("div");
+      div.className = "install-item";
+      div.innerHTML = `
+        <div>
+          <strong>${inst.nomeLocal}</strong>
+          <span>${inst.localDetalhe || "Sem detalhes"}</span>
+        </div>
+        <div style="display:flex; gap:6px;">
+            <button class="btn btn-sec" style="padding:4px 10px; font-size:12px;" onclick="editarInstalacaoTemp(${index})">Editar</button>
+            <button class="btn btn-danger" style="padding:4px 10px; font-size:12px;" onclick="removerInstalacaoTemp(${index})">Remover</button>
+        </div>
+      `;
+      container.appendChild(div);
+    });
+  }
+
+  /* ================= BUSCA RÁPIDA (FUZZY SEARCH - PRINCIPAL) ================= */
+  const mainInput = $("mainSearchInput");
+  const suggestionsBox = $("mainSuggestions");
+
+  mainInput.addEventListener("input", function() {
+      const val = this.value.toLowerCase().trim();
+      if(val.length < 2) { suggestionsBox.style.display = "none"; return; }
+
+      const terms = val.split(" ");
+      const matches = db.filter(v => {
+          const str = `${v.tipo} ${v.marca} ${v.modelo} ${v.submodelo} ${v.ano}`.toLowerCase();
+          return terms.every(t => str.includes(t));
+      }).slice(0, 8); // Top 8 results
+
+      if(matches.length === 0) {
+           suggestionsBox.style.display = "none";
+           return;
+      }
+
+      suggestionsBox.innerHTML = "";
+      matches.forEach(v => {
+          const div = document.createElement("div");
+          div.className = "suggestion-item";
+          div.innerHTML = `<strong>${v.modelo}</strong> <small>${v.marca} (${v.ano})</small>`;
+          div.onclick = () => {
+              mainInput.value = `${v.marca} ${v.modelo} ${v.ano}`;
+              suggestionsBox.style.display = "none";
+              exibirResultadoDireto(v);
+          };
+          suggestionsBox.appendChild(div);
+      });
+      suggestionsBox.style.display = "block";
+  });
+
+  document.addEventListener("click", (e) => {
+      if(e.target !== mainInput) suggestionsBox.style.display = "none";
+  });
+
+  /* ================= BUSCA INTELIGENTE COM SELETOR ================= */
+
   window.buscar = function() {
     let {tipoSelect,marcaSelect,modeloSelect,submodeloSelect,anoSelect} = ids();
+    
     let r = db.find(v => v.tipo === tipoSelect.value && v.marca === marcaSelect.value && v.modelo === modeloSelect.value
       && (v.submodelo||"") === submodeloSelect.value && v.ano === anoSelect.value);
     
     if(!r) { $("resultado").innerText = "Nenhum padrão encontrado."; return; }
-    
-    $("resultado").innerHTML =
-    `<div style="font-family:Verdana;font-size:20px; color:white;">Local de instalação: ${r.local}</div>
-     <div style="font-family:Verdana;font-size:20px; color:white;">Positivo: ${r.positivo}</div>
-     <div style="font-family:Verdana;font-size:20px; color:white;">Negativo: ${r.negativo}</div>
-     <div style="font-family:Verdana;font-size:20px; color:white;">Pós-chave: ${r.posChave}</div>
-     <div style="font-family:Verdana;font-size:20px; color:white;">Bloqueio: ${r.bloqueio}</div>
-     <div style="margin-top:10px;text-align:right;"><button class='btn btn-sec' onclick="editarVeiculo('${r.id}')">Editar este</button></div>`;
+    exibirResultadoDireto(r);
   };
+
+  function exibirResultadoDireto(r) {
+      currentVehicleResult = r;
+      $("seletorLocalWrap").style.display = "none";
+      $("btnEditarResultado").style.display = "none";
+
+      let instalacoes = r.instalacoes || [];
+      
+      if(instalacoes.length === 0 && r.local) {
+          instalacoes.push({
+            nomeLocal: "Padrão (Único)",
+            localDetalhe: r.local,
+            positivo: r.positivo,
+            negativo: r.negativo,
+            posChave: r.posChave,
+            bloqueio: r.bloqueio
+          });
+      }
+
+      if(instalacoes.length === 0) {
+          $("resultado").innerText = "Veículo cadastrado, mas sem dados de fiação.";
+      } else {
+          const select = $("resultadoLocalSelect");
+          select.innerHTML = "";
+          instalacoes.forEach((inst, idx) => {
+              let opt = document.createElement("option");
+              opt.value = idx;
+              opt.text = inst.nomeLocal + (inst.localDetalhe ? ` - ${inst.localDetalhe}` : "");
+              select.appendChild(opt);
+          });
+
+          $("seletorLocalWrap").style.display = "block";
+          renderizarDetalhesInstalacao(instalacoes[0]);
+
+          select.onchange = () => {
+              renderizarDetalhesInstalacao(instalacoes[select.value]);
+          };
+      }
+
+      const btnDiv = $("btnEditarResultado");
+      btnDiv.style.display = "block";
+      btnDiv.innerHTML = `<button class='btn btn-sec' onclick="editarVeiculo('${r.id}')">Editar este Veículo</button>`;
+  }
+
+  function renderizarDetalhesInstalacao(dados) {
+      $("resultado").innerHTML = 
+      `<div style="font-family:Verdana;font-size:20px; color:white;">Local de instalação: ${dados.localDetalhe || dados.nomeLocal}</div>
+       <div style="font-family:Verdana;font-size:20px; color:white;">Positivo: ${dados.positivo}</div>
+       <div style="font-family:Verdana;font-size:20px; color:white;">Negativo: ${dados.negativo}</div>
+       <div style="font-family:Verdana;font-size:20px; color:white;">Pós-chave: ${dados.posChave}</div>
+       <div style="font-family:Verdana;font-size:20px; color:white;">Bloqueio: ${dados.bloqueio}</div>`;
+  }
 
   window.resetBusca = function() {
     ["tipoSelect","marcaSelect","modeloSelect","submodeloSelect","anoSelect"].forEach(id => $(id).value = "");
     ["marcaWrap","modeloWrap","subWrap","anoWrap"].forEach(id => $(id).style.display = "none");
+    $("seletorLocalWrap").style.display = "none";
+    $("btnEditarResultado").style.display = "none";
+    $("mainSearchInput").value = "";
     $("resultado").innerText = "Sistema pronto. Faça sua busca.";
   };
 
-  window.filtrarEdicao = function() {
-    let lista = userDB.filter(v =>
-      (!$("editTipo").value || v.tipo === $("editTipo").value) &&
-      (!$("editMarca").value || v.marca === $("editMarca").value) &&
-      (!$("editModelo").value || v.modelo === $("editModelo").value) &&
-      (!$("editSub").value || v.submodelo === $("editSub").value) &&
-      (!$("editAno").value || v.ano === $("editAno").value));
-    renderLista(lista);
-  };
+  /* ================= SALVAR, EXCLUIR E EDITAR ================= */
 
   window.editarVeiculo = function(id) {
-    // Busca pelo ID do Firebase no array local
     const v = userDB.find(x => x.id === id);
-    if(!v) { alert('Veículo não encontrado (pode ter sido removido).'); return; }
+    if(!v) { showNotification('Veículo não encontrado.','error'); return; }
     
-    editarIndex = id; // Guarda o ID do documento
+    editarIndex = id;
     $("modalTitle").innerText = "Editar veículo";
-    $("overlay").style.display = "block";
-    $("modal").style.display = "block";
     
     $("addTipo").value = v.tipo;
     preencherAddMarca();
@@ -313,17 +561,50 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
     $("addModelo").value = v.modelo;
     $("addSubmodelo").value = v.submodelo;
     $("addAno").value = v.ano;
-    $("addLocal").value = v.local;
-    $("addPositivo").value = v.positivo;
-    $("addNegativo").value = v.negativo;
-    $("addPosChave").value = v.posChave;
-    $("addBloqueio").value = v.bloqueio;
+
+    tempInstalacoes = v.instalacoes || [];
+    
+    if(tempInstalacoes.length === 0 && v.local) {
+         tempInstalacoes.push({
+            nomeLocal: "Instalação Padrão",
+            localDetalhe: v.local,
+            positivo: v.positivo,
+            negativo: v.negativo,
+            posChave: v.posChave,
+            bloqueio: v.bloqueio
+        });
+    }
+
+    renderTempInstalacoes();
+    limparCamposInstalacao();
+
+    $("overlay").style.display = "block";
+    $("modal").style.display = "block";
   };
 
-  /* ================= LÓGICA DE SALVAR (FIREBASE) ================= */
+  window.removerVeiculo = async function(id) {
+      if(confirm("Tem certeza que deseja EXCLUIR este veículo permanentemente?")) {
+          try {
+              await deleteDoc(doc(dbFirestore, "veiculos", id));
+              showNotification("Veículo excluído com sucesso.", "success");
+              await carregarDadosDoFirebase();
+          } catch(e) {
+              console.error(e);
+              showNotification("Erro ao excluir veículo.", "error");
+          }
+      }
+  };
+
   $("btnSalvar").onclick = async () => {
     $("btnSalvar").innerText = "Salvando...";
     $("btnSalvar").disabled = true;
+
+    if(tempInstalacoes.length === 0) {
+        showNotification("Adicione pelo menos uma opção de instalação.", "error");
+        $("btnSalvar").innerText = "Salvar Veículo Completo";
+        $("btnSalvar").disabled = false;
+        return;
+    }
 
     const v = {
       tipo: $("addTipo").value,
@@ -331,44 +612,58 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
       modelo: $("addModelo").value.trim(),
       submodelo: $("addSubmodelo").value.trim(),
       ano: $("addAno").value.trim(),
-      local: $("addLocal").value.trim(),
-      positivo: $("addPositivo").value.trim(),
-      negativo: $("addNegativo").value.trim(),
-      posChave: $("addPosChave").value.trim(),
-      bloqueio: $("addBloqueio").value.trim()
+      instalacoes: tempInstalacoes
     };
 
     if(!v.tipo || !v.marca || !v.modelo || !v.ano) {
-      alert("Preencha os campos obrigatórios!");
-      $("btnSalvar").innerText = "Salvar";
+      showNotification("Preencha Marca, Modelo e Ano.", "error");
+      $("btnSalvar").innerText = "Salvar Veículo Completo";
       $("btnSalvar").disabled = false;
       return;
     }
 
     try {
       if (editarIndex) {
-        // UPDATE
-        const veiculoRef = doc(dbFirestore, "veiculos", editarIndex);
-        await updateDoc(veiculoRef, v);
+        await updateDoc(doc(dbFirestore, "veiculos", editarIndex), v);
+        showNotification("Veículo atualizado!", "success");
       } else {
-        // CREATE
         await addDoc(veiculosCollection, v);
+        showNotification("Veículo cadastrado!", "success");
       }
-      
-      // Recarrega dados para atualizar lista local
       await carregarDadosDoFirebase();
       fecharModal();
-
     } catch (e) {
       console.error("Erro ao salvar: ", e);
-      alert("Erro ao salvar no servidor.");
+      showNotification("Erro ao salvar no servidor.", "error");
     } finally {
-      $("btnSalvar").innerText = "Salvar";
+      $("btnSalvar").innerText = "Salvar Veículo Completo";
       $("btnSalvar").disabled = false;
     }
   };
 
-  /* ================= AUXILIARES ================= */
+  /* ================= FILTROS LISTA DE EDIÇÃO ================= */
+
+  window.filtrarEdicao = function() {
+    const termo = $("editSearchInput").value.toLowerCase().trim();
+    
+    let lista = userDB.filter(v => {
+      // Filtro de texto (Fuzzy simples)
+      const fullString = `${v.marca} ${v.modelo} ${v.submodelo} ${v.ano}`.toLowerCase();
+      const matchTexto = !termo || termo.split(" ").every(t => fullString.includes(t));
+
+      // Filtros de select
+      const matchTipo = !$("editTipo").value || v.tipo === $("editTipo").value;
+      const matchMarca = !$("editMarca").value || v.marca === $("editMarca").value;
+      const matchModelo = !$("editModelo").value || v.modelo === $("editModelo").value;
+      const matchSub = !$("editSub").value || v.submodelo === $("editSub").value;
+      const matchAno = !$("editAno").value || v.ano === $("editAno").value;
+
+      return matchTexto && matchTipo && matchMarca && matchModelo && matchSub && matchAno;
+    });
+
+    renderLista(lista);
+  };
+
   function preencherAddMarca(){
     const t = $("addTipo").value;
     $("addMarca").innerHTML = "";
@@ -387,32 +682,23 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
   }
   
   function clearOptions(id, placeholder){
-    const el = $(id);
-    if(!el) return;
-    el.innerHTML = "";
-    let o = document.createElement('option');
-    o.value = ''; o.text = placeholder || '-- selecione --';
+    const el = $(id); if(!el) return; el.innerHTML = "";
+    let o = document.createElement('option'); o.value = ''; o.text = placeholder || '-- selecione --';
     el.appendChild(o);
   }
 
   function resetCascata(ids){
-    ids.forEach(n => {
-      const el = $(n+"Select");
-      if(el) el.innerHTML = "<option value=''>-- selecione --</option>";
-    });
+    ids.forEach(n => { const el = $(n+"Select"); if(el) el.innerHTML = "<option value=''>-- selecione --</option>"; });
   }
 
   function ids(){
     return {
-      tipoSelect: $("tipoSelect"),
-      marcaSelect: $("marcaSelect"),
-      modeloSelect: $("modeloSelect"),
-      submodeloSelect: $("submodeloSelect"),
-      anoSelect: $("anoSelect")
+      tipoSelect: $("tipoSelect"), marcaSelect: $("marcaSelect"),
+      modeloSelect: $("modeloSelect"), submodeloSelect: $("submodeloSelect"), anoSelect: $("anoSelect")
     };
   }
 
-  /* ================= CASCATA DE BUSCA ================= */
+  /* ================= CASCATA BUSCA ANTIGA ================= */
   $("tipoSelect").addEventListener("change",()=>{
     resetCascata(["marca","modelo","submodelo","ano"]);
     if($("tipoSelect").value){
@@ -425,7 +711,6 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
   $("marcaSelect").addEventListener("change",()=>{
     resetCascata(["modelo","submodelo","ano"]);
     let {tipoSelect,marcaSelect}=ids();
-    // Filtra baseado na cópia local (db)
     let modelos=[...new Set(db.filter(v=>v.tipo===tipoSelect.value&&v.marca===marcaSelect.value).map(v=>v.modelo))];
     if(modelos.length){
       $("modeloWrap").style.display="block";
@@ -455,16 +740,17 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
     .sort().forEach(a=>addOpt("anoSelect",a));
   }
 
-  /* ================= LISTAGEM E EDIÇÃO FILTROS ================= */
+  /* ================= LISTAGEM E RENDERIZAÇÃO ================= */
   function popularFiltros(){
     ["editMarca","editModelo","editSub","editAno"].forEach(id=>$(id).innerHTML="<option value=''>-- todos --</option>");
     
+    // Filtros planos (popula com todas as opções existentes no banco)
     const marcasUn = [...new Set(userDB.map(v=>v.marca))].sort();
     const modelosUn = [...new Set(userDB.map(v=>v.modelo))].sort();
-    const subsUn = [...new Set(userDB.map(v=>v.submodelo).filter(v=>v))].sort();
+    const subsUn = [...new Set(userDB.map(v=>v.submodelo).filter(x=>x))].sort();
     const anosUn = [...new Set(userDB.map(v=>v.ano))].sort();
-
-    marcasUn.forEach(v=>addOpt('editMarca',v));
+    
+    marcasUn.forEach(v=>addOpt('editMarca',v)); 
     modelosUn.forEach(v=>addOpt('editModelo',v));
     subsUn.forEach(v=>addOpt('editSub',v));
     anosUn.forEach(v=>addOpt('editAno',v));
@@ -476,53 +762,29 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
     if(!lista.length){ c.innerHTML = "<i>Nenhum veículo encontrado</i>"; return; }
     lista.forEach((v) => {
       let d = document.createElement("div");
-      d.style = "padding:6px 0;border-bottom:1px solid #ddd;";
-      d.innerHTML = `<div style='display:flex;align-items:center;justify-content:space-between'>
-        <div>${v.tipo} | ${v.marca} | ${v.modelo} | ${v.submodelo||""} | ${v.ano}</div>
-        <div><button class='btn btn-sec' onclick="editarVeiculo('${v.id}')">Editar</button></div>
+      d.style = "padding:10px 0;border-bottom:1px solid #ddd;";
+      let qtdOpcoes = v.instalacoes ? v.instalacoes.length : 1;
+      
+      d.innerHTML = `
+      <div style='display:flex;align-items:center;justify-content:space-between'>
+        <div>
+           <strong>${v.marca} ${v.modelo}</strong> (${v.ano})<br>
+           <span style="font-size:12px;color:#666">${qtdOpcoes} local(is) | ${v.submodelo || ''}</span>
+        </div>
+        <div style="display:flex; gap:8px;">
+            <button class='btn btn-sec' onclick="editarVeiculo('${v.id}')">Editar</button>
+            <button class='btn btn-danger' onclick="removerVeiculo('${v.id}')">Excluir</button>
+        </div>
       </div>`;
       c.appendChild(d);
     });
   }
 
-  // Listeners cascata da edição
-  $("editTipo").onchange = updateEditMarcaModelSub;
-  $("editMarca").onchange = updateEditModelSub;
-  $("editModelo").onchange = updateEditSub;
-
-  function updateEditMarcaModelSub(){
-    const t = $("editTipo").value;
-    clearOptions('editMarca','-- todos --');
-    clearOptions('editModelo','-- todos --');
-    clearOptions('editSub','-- todos --');
-    clearOptions('editAno','-- todos --');
-
-    const filtered = userDB.filter(v=> !t || v.tipo===t);
-    [...new Set(filtered.map(v=>v.marca))].sort().forEach(v=>addOpt('editMarca',v));
-    [...new Set(filtered.map(v=>v.modelo))].sort().forEach(v=>addOpt('editModelo',v));
-    [...new Set(filtered.map(v=>v.submodelo).filter(x=>x))].sort().forEach(v=>addOpt('editSub',v));
-    [...new Set(filtered.map(v=>v.ano))].sort().forEach(v=>addOpt('editAno',v));
-  }
-
-  function updateEditModelSub(){
-    const t = $("editTipo").value; const m = $("editMarca").value;
-    clearOptions('editModelo','-- todos --');
-    clearOptions('editSub','-- todos --');
-    clearOptions('editAno','-- todos --');
-    const filtered = userDB.filter(v=> (!t||v.tipo===t) && (!m||v.marca===m));
-    [...new Set(filtered.map(v=>v.modelo))].sort().forEach(v=>addOpt('editModelo',v));
-    [...new Set(filtered.map(v=>v.submodelo).filter(x=>x))].sort().forEach(v=>addOpt('editSub',v));
-    [...new Set(filtered.map(v=>v.ano))].sort().forEach(v=>addOpt('editAno',v));
-  }
-
-  function updateEditSub(){
-    const t = $("editTipo").value; const m = $("editMarca").value; const mo = $("editModelo").value;
-    clearOptions('editSub','-- todos --');
-    clearOptions('editAno','-- todos --');
-    const filtered = userDB.filter(v=> (!t||v.tipo===t) && (!m||v.marca===m) && (!mo||v.modelo===mo));
-    [...new Set(filtered.map(v=>v.submodelo).filter(x=>x))].sort().forEach(v=>addOpt('editSub',v));
-    [...new Set(filtered.map(v=>v.ano))].sort().forEach(v=>addOpt('editAno',v));
-  }
+  $("editTipo").onchange = filtrarEdicao;
+  $("editMarca").onchange = filtrarEdicao;
+  $("editModelo").onchange = filtrarEdicao;
+  $("editSub").onchange = filtrarEdicao;
+  $("editAno").onchange = filtrarEdicao;
 </script>
 </body>
 </html>
