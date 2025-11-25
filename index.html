@@ -105,6 +105,7 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
         <option value="carro">Carro</option>
         <option value="moto">Moto</option>
         <option value="caminhao">Caminhão</option>
+        <option value="rastreador">Rastreador</option>
       </select>
 
       <div id="marcaWrap" style="display:none">
@@ -137,7 +138,7 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
       <h3 class="resultTitle">Resultado</h3>
       
       <div id="seletorLocalWrap" style="display:none; margin-bottom: 15px; padding: 10px; background: #eff6ff; border-radius: 8px;">
-        <label style="color: #1e3a8a; font-weight: bold; margin-top:0;">Opção de Local de Instalação:</label>
+        <label id="seletorLocalTitle" style="color: #1e3a8a; font-weight: bold; margin-top:0;">Opção de Local de Instalação:</label>
         <select id="resultadoLocalSelect" style="background: white; border: 1px solid #bfdbfe; color: #1e3a8a; font-weight: 600;">
         </select>
       </div>
@@ -167,7 +168,13 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
       <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap:10px; margin-top:10px">
           <div>
             <label>Tipo</label>
-            <select id="editTipo" style="margin-top:0"><option value="">-- todos --</option><option value="carro">Carro</option><option value="moto">Moto</option><option value="caminhao">Caminhão</option></select>
+            <select id="editTipo" style="margin-top:0">
+              <option value="">-- todos --</option>
+              <option value="carro">Carro</option>
+              <option value="moto">Moto</option>
+              <option value="caminhao">Caminhão</option>
+              <option value="rastreador">Rastreador</option>
+            </select>
           </div>
           <div>
               <label>Marca</label>
@@ -177,7 +184,7 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
               <label>Modelo</label>
               <select id="editModelo" style="margin-top:0"><option value="">-- todos --</option></select>
           </div>
-          <div>
+          <div id="editSubWrap">
               <label>Submodelo</label>
               <select id="editSub" style="margin-top:0"><option value="">-- todos --</option></select>
           </div>
@@ -203,30 +210,51 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
 
   <div class="section-title">1. Dados do Veículo</div>
   <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 0;">
-      <div><label>Tipo</label><select id="addTipo"><option value="carro">Carro</option><option value="moto">Moto</option><option value="caminhao">Caminhão</option></select></div>
+      <div>
+        <label>Tipo</label>
+        <select id="addTipo">
+          <option value="carro">Carro</option>
+          <option value="moto">Moto</option>
+          <option value="caminhao">Caminhão</option>
+          <option value="rastreador">Rastreador</option>
+        </select>
+      </div>
       <div><label>Marca</label><select id="addMarca"></select></div>
   </div>
   <label>Modelo</label><input id="addModelo">
   <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 0;">
-    <div><label>Submodelo</label><input id="addSubmodelo"></div>
+    <div id="addSubmodeloWrap">
+        <label>Submodelo</label><input id="addSubmodelo">
+    </div>
     <div><label>Ano</label><input id="addAno" type="number"></div>
   </div>
 
-  <div class="section-title">2. Adicionar Opção de Instalação</div>
+  <div class="section-title" id="section2Title">2. Adicionar Opção de Instalação</div>
   <div style="background: #f1f5f9; padding: 12px; border-radius: 8px;">
-      <label style="color:#0f172a; font-weight:700">Nome do Local (Ex: Caixa de Fusíveis)</label>
-      <input id="addNomeLocal" placeholder="Ex: Painel, Caixa de Fusíveis, Airbag...">
       
-      <label>Local Detalhado (Opcional)</label>
-      <input id="addLocalDetalhe" placeholder="Ex: Abaixo do volante, fio grosso">
+      <div id="localDetalheFields">
+          <label style="color:#0f172a; font-weight:700">Nome do Local (Ex: Caixa de Fusíveis)</label>
+          <input id="addNomeLocal" placeholder="Ex: Painel, Caixa de Fusíveis, Airbag...">
+          
+          <label>Local Detalhado (Opcional)</label>
+          <input id="addLocalDetalhe" placeholder="Ex: Abaixo do volante, fio grosso">
+      </div>
 
       <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 0;">
         <div><label>Positivo</label><input id="addPositivo"></div>
         <div><label>Negativo</label><input id="addNegativo"></div>
       </div>
-      <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 0;">
+      <div class="grid" id="posChaveBloqueioGrid" style="grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 0;">
         <div><label>Pós-chave</label><input id="addPosChave"></div>
-        <div><label>Bloqueio</label><input id="addBloqueio"></div>
+        <div><label id="output1Label">Bloqueio</label><input id="addBloqueio"></div>
+      </div>
+
+      <div id="trackerSpecificFields" style="display:none;">
+          <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 0;">
+              <div><label>Saida 2</label><input id="addSaida2"></div>
+              <div><label>Entrada 1</label><input id="addEntrada1"></div>
+          </div>
+          <div><label>Entrada 2</label><input id="addEntrada2"></div>
       </div>
 
       <button class="btn btn-sec" style="width:100%; margin-top:10px; border-color:var(--accent); color:var(--accent-darker)" onclick="adicionarInstalacaoNaLista()">+ Adicionar esta Opção</button>
@@ -272,7 +300,8 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
   const marcas = {
     carro:["Fiat","Volkswagen","Chevrolet","Toyota","Ford","Renault","Peugeot","Citroën","Honda","Hyundai","Land Rover","Ram","BYD"],
     moto:["Honda","Yamaha","Suzuki","BMW","Shineray","Dafra","Kawasaki"],
-    caminhao:["Volvo","Scania","Mercedes-Benz","Volkswagen Caminhões","Iveco","Ford","Renault Trucks","Hyundai HR / Kia Bongo"]
+    caminhao:["Volvo","Scania","Mercedes-Benz","Volkswagen Caminhões","Iveco","Ford","Renault Trucks","Hyundai HR / Kia Bongo"],
+    rastreador:["Suntech", "Ituran", "Positron", "Cobli", "Tracker Brasil", "X3Tech"]
   };
 
   const $ = id => document.getElementById(id);
@@ -311,7 +340,7 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
       db = [...userDB]; 
       $("resultado").innerText = "Sistema pronto. Faça sua busca.";
       if($("editarAba").style.display === "block") {
-          popularFiltros();
+          popularFiltrosEdicao(db); // Chama a função correta
           renderLista();
       }
     } catch (e) {
@@ -329,7 +358,8 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
     tempInstalacoes = [];
     $("modalTitle").innerText = "Cadastrar veículo";
     $("addTipo").value = "carro";
-    preencherAddMarca();
+    preencherAddMarca(); 
+    handleTipoChange(); 
     
     ["addMarca","addModelo","addSubmodelo","addAno"].forEach(id => $(id).value = "");
     limparCamposInstalacao();
@@ -349,7 +379,7 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
   window.abrirEditar = function() {
     $("editarAba").style.display = "block";
     $("gridPrincipal").style.display = "none";
-    popularFiltros();
+    popularFiltrosEdicao(db); // Inicia os filtros da aba de edição
     renderLista();
   };
 
@@ -359,23 +389,63 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
   };
 
   function limparCamposInstalacao() {
-    ["addNomeLocal", "addLocalDetalhe", "addPositivo", "addNegativo", "addPosChave", "addBloqueio"].forEach(id => $(id).value = "");
+    ["addNomeLocal", "addLocalDetalhe", "addPositivo", "addNegativo", "addPosChave", "addBloqueio", "addSaida2", "addEntrada1", "addEntrada2"].forEach(id => $(id).value = "");
   }
+  
+  // Função para adaptar os campos de instalação
+  function handleTipoChange() {
+    const isRastreador = $("addTipo").value === 'rastreador';
+    
+    // 1. Alterna a visibilidade dos campos de detalhe de veículo
+    $("localDetalheFields").style.display = isRastreador ? 'none' : 'block';
+    
+    // 2. Controla a visibilidade do campo Submodelo no modal (OCULTA PARA RASTREADOR)
+    $("addSubmodeloWrap").style.display = isRastreador ? 'none' : 'block'; 
+
+    // 3. Ajusta o título da Seção 2
+    $("section2Title").innerHTML = isRastreador 
+        ? "2. Configuração de Cabos Padrão" 
+        : "2. Adicionar Opção de Instalação";
+
+    // 4. Renomeia o input/label 'Bloqueio' para 'Saida 1' para rastreadores
+    $("output1Label").innerText = isRastreador ? "Saida 1 (Bloqueio)" : "Bloqueio";
+
+    // 5. Alterna a visibilidade dos campos específicos de rastreador
+    $("trackerSpecificFields").style.display = isRastreador ? 'block' : 'none';
+
+    // 6. Popula a lista de marcas
+    preencherAddMarca();
+  }
+  $("addTipo").addEventListener("change", handleTipoChange);
+
 
   /* ================= LÓGICA DE INSTALAÇÕES (MODAL) ================= */
   
   window.adicionarInstalacaoNaLista = function() {
-    const nome = $("addNomeLocal").value.trim();
-    if(!nome) { showNotification("Dê um nome para o local (ex: Painel).", "error"); return; }
+    const isRastreador = $("addTipo").value === 'rastreador';
+
+    // Nome é o Modelo do veículo OU o Nome do Local
+    let nome = isRastreador ? `${$("addMarca").value} ${$("addModelo").value}`.trim() : $("addNomeLocal").value.trim();
+    if(!nome || isRastreador && !$("addModelo").value.trim()) { 
+        showNotification(isRastreador ? "Preencha o Modelo do rastreador (Seção 1)." : "Dê um nome para o local (ex: Painel).", "error"); 
+        return; 
+    }
     
     const novaInstalacao = {
       nomeLocal: nome,
-      localDetalhe: $("addLocalDetalhe").value.trim(),
+      // Para rastreador, detalhes é ignorado
+      localDetalhe: isRastreador ? '' : $("addLocalDetalhe").value.trim(), 
       positivo: $("addPositivo").value.trim(),
       negativo: $("addNegativo").value.trim(),
       posChave: $("addPosChave").value.trim(),
-      bloqueio: $("addBloqueio").value.trim()
+      bloqueio: $("addBloqueio").value.trim(), // Saida 1 / Bloqueio
     };
+
+    if (isRastreador) {
+        novaInstalacao.saida2 = $("addSaida2").value.trim();
+        novaInstalacao.entrada1 = $("addEntrada1").value.trim();
+        novaInstalacao.entrada2 = $("addEntrada2").value.trim();
+    }
 
     tempInstalacoes.push(novaInstalacao);
     renderTempInstalacoes();
@@ -388,24 +458,36 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
     renderTempInstalacoes();
   };
 
-  // NOVA FUNÇÃO DE EDIÇÃO INDIVIDUAL DA INSTALAÇÃO
   window.editarInstalacaoTemp = function(index) {
       const item = tempInstalacoes[index];
       
-      // Joga os valores de volta para os inputs
-      $("addNomeLocal").value = item.nomeLocal;
-      $("addLocalDetalhe").value = item.localDetalhe;
-      $("addPositivo").value = item.positivo;
-      $("addNegativo").value = item.negativo;
-      $("addPosChave").value = item.posChave;
-      $("addBloqueio").value = item.bloqueio;
+      // Carrega campos comuns/veículo
+      $("addNomeLocal").value = item.nomeLocal || '';
+      $("addLocalDetalhe").value = item.localDetalhe || '';
+      $("addPositivo").value = item.positivo || '';
+      $("addNegativo").value = item.negativo || '';
+      $("addPosChave").value = item.posChave || '';
+      $("addBloqueio").value = item.bloqueio || '';
 
-      // Remove da lista para o usuário "Adicionar" novamente corrigido
+      // Carrega campos específicos de rastreador, se existirem
+      if (item.saida2 || item.entrada1 || item.entrada2) {
+          $("addSaida2").value = item.saida2 || '';
+          $("addEntrada1").value = item.entrada1 || '';
+          $("addEntrada2").value = item.entrada2 || '';
+          // Se for Rastreador, o nome do local é o Modelo, não carregamos no campo localDetalheFields
+          $("addNomeLocal").value = ''; 
+      } else {
+          // Limpa campos de rastreador
+          $("addSaida2").value = '';
+          $("addEntrada1").value = '';
+          $("addEntrada2").value = '';
+      }
+      
       tempInstalacoes.splice(index, 1);
       renderTempInstalacoes();
       
       showNotification("Dados carregados. Edite e clique em '+ Adicionar' novamente.", "info");
-      $("addNomeLocal").focus();
+      if(!item.saida2 && !item.entrada1 && !item.entrada2) $("addNomeLocal").focus();
   };
 
   function renderTempInstalacoes() {
@@ -421,14 +503,27 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
     tempInstalacoes.forEach((inst, index) => {
       let div = document.createElement("div");
       div.className = "install-item";
+      
+      let details = inst.localDetalhe || "Sem detalhes";
+      let title = inst.nomeLocal;
+      
+      // Adiciona detalhes específicos do rastreador na visualização da lista
+      if (inst.saida2 || inst.entrada1 || inst.entrada2) {
+          details = `S2: ${inst.saida2 || '-'} | E1: ${inst.entrada1 || '-'} | E2: ${inst.entrada2 || '-'}`;
+          // Para rastreador, o título já é o modelo (definido em adicionarInstalacaoNaLista)
+          title = "Modelo: " + title;
+      } else {
+          title = "Local: " + title;
+      }
+
       div.innerHTML = `
         <div>
-          <strong>${inst.nomeLocal}</strong>
-          <span>${inst.localDetalhe || "Sem detalhes"}</span>
+          <strong>${title}</strong>
+          <span>${details}</span>
         </div>
         <div style="display:flex; gap:6px;">
-            <button class="btn btn-sec" style="padding:4px 10px; font-size:12px;" onclick="editarInstalacaoTemp(${index})">Editar</button>
-            <button class="btn btn-danger" style="padding:4px 10px; font-size:12px;" onclick="removerInstalacaoTemp(${index})">Remover</button>
+            <button class='btn btn-sec' style="padding:4px 10px; font-size:12px;" onclick="editarInstalacaoTemp(${index})">Editar</button>
+            <button class='btn btn-danger' style="padding:4px 10px; font-size:12px;" onclick="removerInstalacaoTemp(${index})">Remover</button>
         </div>
       `;
       container.appendChild(div);
@@ -447,7 +542,7 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
       const matches = db.filter(v => {
           const str = `${v.tipo} ${v.marca} ${v.modelo} ${v.submodelo} ${v.ano}`.toLowerCase();
           return terms.every(t => str.includes(t));
-      }).slice(0, 8); // Top 8 results
+      }).slice(0, 8); 
 
       if(matches.length === 0) {
            suggestionsBox.style.display = "none";
@@ -489,9 +584,11 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
       currentVehicleResult = r;
       $("seletorLocalWrap").style.display = "none";
       $("btnEditarResultado").style.display = "none";
+      const isRastreador = r.tipo === 'rastreador';
 
       let instalacoes = r.instalacoes || [];
       
+      // Retrocompatibilidade/Single entry mode
       if(instalacoes.length === 0 && r.local) {
           instalacoes.push({
             nomeLocal: "Padrão (Único)",
@@ -508,10 +605,24 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
       } else {
           const select = $("resultadoLocalSelect");
           select.innerHTML = "";
+          
+          // AJUSTA O TÍTULO DO SELETOR DE ACORDO COM O TIPO
+          $("seletorLocalTitle").innerText = isRastreador ? "Modelo: " : "Local de instalação: ";
+
           instalacoes.forEach((inst, idx) => {
               let opt = document.createElement("option");
               opt.value = idx;
-              opt.text = inst.nomeLocal + (inst.localDetalhe ? ` - ${inst.localDetalhe}` : "");
+              
+              let title;
+              if (isRastreador) {
+                  // Rastreador: mostra o nomeLocal que é a marca/modelo do rastreador
+                  title = inst.nomeLocal; 
+              } else {
+                  // Veículo: mostra o nome do local ou o detalhe se o nomeLocal for genérico
+                  title = inst.nomeLocal + (inst.localDetalhe ? ` - ${inst.localDetalhe}` : "");
+              }
+
+              opt.text = title;
               select.appendChild(opt);
           });
 
@@ -529,12 +640,49 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
   }
 
   function renderizarDetalhesInstalacao(dados) {
-      $("resultado").innerHTML = 
-      `<div style="font-family:Verdana;font-size:20px; color:white;">Local de instalação: ${dados.localDetalhe || dados.nomeLocal}</div>
-       <div style="font-family:Verdana;font-size:20px; color:white;">Positivo: ${dados.positivo}</div>
-       <div style="font-family:Verdana;font-size:20px; color:white;">Negativo: ${dados.negativo}</div>
-       <div style="font-family:Verdana;font-size:20px; color:white;">Pós-chave: ${dados.posChave}</div>
-       <div style="font-family:Verdana;font-size:20px; color:white;">Bloqueio: ${dados.bloqueio}</div>`;
+      // Verifica o tipo do veículo atualmente exibido
+      const isRastreador = currentVehicleResult && currentVehicleResult.tipo === 'rastreador';
+      
+      // --- AJUSTES DO RÓTULO PRINCIPAL (Local vs Modelo) ---
+      let mainLabel;
+      let mainValue;
+
+      if (isRastreador) {
+          mainLabel = "Modelo";
+          // Para Rastreador, o valor principal é o nomeLocal (Marca/Modelo do Rastreador)
+          mainValue = dados.nomeLocal; 
+      } else {
+          mainLabel = "Local de instalação";
+          // Para Veículo, o valor principal é a combinação NomeLocal e Detalhe
+          mainValue = dados.nomeLocal + (dados.localDetalhe ? ` (${dados.localDetalhe})` : "");
+      }
+      
+      // --- AJUSTES DO RÓTULO DE BLOQUEIO ---
+      const bloqueioLabel = isRastreador ? "Bloqueio/Saida 1" : "Bloqueio";
+
+
+      // Campos básicos
+      let html = `<div style="font-family:Verdana;font-size:20px; color:white;">${mainLabel}: ${mainValue}</div>
+                  <div style="font-family:Verdana;font-size:20px; color:white;">Positivo: ${dados.positivo}</div>
+                  <div style="font-family:Verdana;font-size:20px; color:white;">Negativo: ${dados.negativo}</div>
+                  <div style="font-family:Verdana;font-size:20px; color:white;">Pós-chave: ${dados.posChave}</div>
+                  <div style="font-family:Verdana;font-size:20px; color:white;">${bloqueioLabel}: ${dados.bloqueio}</div>`;
+      
+      // --- CAMPOS ESPECÍFICOS DO RASTREADOR (Inclusão Condicional, verificando se o valor existe) ---
+      if (isRastreador) {
+          // Os campos de rastreador são exibidos apenas se tiverem conteúdo
+          if (dados.saida2) {
+              html += `<div style="font-family:Verdana;font-size:20px; color:white;">Saida 2: ${dados.saida2}</div>`;
+          }
+          if (dados.entrada1) {
+              html += `<div style="font-family:Verdana;font-size:20px; color:white;">Entrada 1: ${dados.entrada1}</div>`;
+          }
+          if (dados.entrada2) {
+              html += `<div style="font-family:Verdana;font-size:20px; color:white;">Entrada 2: ${dados.entrada2}</div>`;
+          }
+      }
+      
+      $("resultado").innerHTML = html;
   }
 
   window.resetBusca = function() {
@@ -562,8 +710,11 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
     $("addSubmodelo").value = v.submodelo;
     $("addAno").value = v.ano;
 
+    handleTipoChange(); 
+
     tempInstalacoes = v.instalacoes || [];
     
+    // Retrocompatibilidade/Single entry mode
     if(tempInstalacoes.length === 0 && v.local) {
          tempInstalacoes.push({
             nomeLocal: "Instalação Padrão",
@@ -605,12 +756,15 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
         $("btnSalvar").disabled = false;
         return;
     }
+    
+    const isRastreador = $("addTipo").value === 'rastreador';
+    const submodeloValue = isRastreador ? "" : $("addSubmodelo").value.trim();
 
     const v = {
       tipo: $("addTipo").value,
       marca: $("addMarca").value,
       modelo: $("addModelo").value.trim(),
-      submodelo: $("addSubmodelo").value.trim(),
+      submodelo: submodeloValue, 
       ano: $("addAno").value.trim(),
       instalacoes: tempInstalacoes
     };
@@ -641,40 +795,8 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
     }
   };
 
-  /* ================= FILTROS LISTA DE EDIÇÃO ================= */
-
-  window.filtrarEdicao = function() {
-    const termo = $("editSearchInput").value.toLowerCase().trim();
-    
-    let lista = userDB.filter(v => {
-      // Filtro de texto (Fuzzy simples)
-      const fullString = `${v.marca} ${v.modelo} ${v.submodelo} ${v.ano}`.toLowerCase();
-      const matchTexto = !termo || termo.split(" ").every(t => fullString.includes(t));
-
-      // Filtros de select
-      const matchTipo = !$("editTipo").value || v.tipo === $("editTipo").value;
-      const matchMarca = !$("editMarca").value || v.marca === $("editMarca").value;
-      const matchModelo = !$("editModelo").value || v.modelo === $("editModelo").value;
-      const matchSub = !$("editSub").value || v.submodelo === $("editSub").value;
-      const matchAno = !$("editAno").value || v.ano === $("editAno").value;
-
-      return matchTexto && matchTipo && matchMarca && matchModelo && matchSub && matchAno;
-    });
-
-    renderLista(lista);
-  };
-
-  function preencherAddMarca(){
-    const t = $("addTipo").value;
-    $("addMarca").innerHTML = "";
-    marcas[t].forEach(m => {
-      let o = document.createElement("option");
-      o.value = m; o.text = m;
-      $("addMarca").appendChild(o);
-    });
-  }
-  $("addTipo").addEventListener("change", preencherAddMarca);
-
+  /* ================= FUNÇÕES AUXILIARES DE OPÇÕES/SELECT ================= */
+  
   function addOpt(id,v){
     let o = document.createElement("option");
     o.value = v; o.text = v;
@@ -683,12 +805,12 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
   
   function clearOptions(id, placeholder){
     const el = $(id); if(!el) return; el.innerHTML = "";
-    let o = document.createElement('option'); o.value = ''; o.text = placeholder || '-- selecione --';
+    let o = document.createElement('option'); o.value = ''; o.text = placeholder || '-- todos --';
     el.appendChild(o);
   }
 
   function resetCascata(ids){
-    ids.forEach(n => { const el = $(n+"Select"); if(el) el.innerHTML = "<option value=''>-- selecione --</option>"; });
+    ids.forEach(n => { const el = $(n+"Select"); if(el) clearOptions(n+"Select", "-- selecione --"); });
   }
 
   function ids(){
@@ -698,35 +820,69 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
     };
   }
 
-  /* ================= CASCATA BUSCA ANTIGA ================= */
+  function preencherAddMarca(){
+    const t = $("addTipo").value;
+    clearOptions("addMarca", "-- selecione --");
+    marcas[t].forEach(m => addOpt("addMarca", m));
+  }
+
+  /* ================= CASCATA BUSCA PRINCIPAL ================= */
+  
   $("tipoSelect").addEventListener("change",()=>{
     resetCascata(["marca","modelo","submodelo","ano"]);
+    ["subWrap","modeloWrap","anoWrap"].forEach(id => $(id).style.display = "none");
+
     if($("tipoSelect").value){
       $("marcaWrap").style.display="block";
-      $("marcaSelect").innerHTML = "<option value=''>-- selecione --</option>";
+      clearOptions("marcaSelect", "-- selecione --");
       marcas[$("tipoSelect").value].forEach(m=>addOpt("marcaSelect",m));
     }
   });
 
   $("marcaSelect").addEventListener("change",()=>{
+    const isRastreador = $("tipoSelect").value === 'rastreador';
+
     resetCascata(["modelo","submodelo","ano"]);
+
     let {tipoSelect,marcaSelect}=ids();
     let modelos=[...new Set(db.filter(v=>v.tipo===tipoSelect.value&&v.marca===marcaSelect.value).map(v=>v.modelo))];
+    
     if(modelos.length){
       $("modeloWrap").style.display="block";
-      $("modeloSelect").innerHTML = "<option value=''>-- selecione --</option>";
+      clearOptions("modeloSelect", "-- selecione --");
       modelos.forEach(v=>addOpt("modeloSelect",v));
+    }
+
+    if(isRastreador) {
+        $("subWrap").style.display = "none";
+        if(modelos.length) { popularAnos(tipoSelect.value,marcaSelect.value,"",""); }
+    } else {
+        $("subWrap").style.display = "none"; 
     }
   });
 
   $("modeloSelect").addEventListener("change",()=>{
+    const isRastreador = $("tipoSelect").value === 'rastreador';
+    
     resetCascata(["submodelo","ano"]);
     let {tipoSelect,marcaSelect,modeloSelect}=ids();
-    let subs=[...new Set(db.filter(v=>v.tipo===tipoSelect.value&&v.marca===marcaSelect.value&&v.modelo===modeloSelect.value).map(v=>v.submodelo).filter(s=>s))];
-    $("subWrap").style.display="block";
-    $("submodeloSelect").innerHTML = "<option value=''>-- selecione --</option>";
-    if(subs.length){subs.forEach(v=>addOpt("submodeloSelect",v));}
-    else popularAnos(tipoSelect.value,marcaSelect.value,modeloSelect.value,"");
+
+    if(isRastreador) {
+        $("subWrap").style.display="none";
+        popularAnos(tipoSelect.value,marcaSelect.value,modeloSelect.value,"");
+
+    } else {
+        let subs=[...new Set(db.filter(v=>v.tipo===tipoSelect.value&&v.marca===marcaSelect.value&&v.modelo===modeloSelect.value).map(v=>v.submodelo).filter(s=>s))];
+        
+        if(subs.length){
+            $("subWrap").style.display="block";
+            clearOptions("submodeloSelect", "-- selecione --");
+            subs.forEach(v=>addOpt("submodeloSelect",v));
+        } else {
+            $("subWrap").style.display="none";
+            popularAnos(tipoSelect.value,marcaSelect.value,modeloSelect.value,"");
+        }
+    }
   });
 
   $("submodeloSelect").addEventListener("change",()=>{
@@ -736,26 +892,142 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
   function popularAnos(t,m,mo,s){
     resetCascata(["ano"]);
     $("anoWrap").style.display="block";
-    [...new Set(db.filter(v=>v.tipo===t&&v.marca===m&&v.modelo===mo&&(s?v.submodelo===s:true)).map(v=>v.ano))]
+    
+    const filteredDb = db.filter(v => 
+        v.tipo === t && 
+        v.marca === m && 
+        v.modelo === mo &&
+        (t === 'rastreador' || !s || v.submodelo === s) 
+    );
+    
+    [...new Set(filteredDb.map(v=>v.ano))]
     .sort().forEach(a=>addOpt("anoSelect",a));
   }
 
-  /* ================= LISTAGEM E RENDERIZAÇÃO ================= */
-  function popularFiltros(){
-    ["editMarca","editModelo","editSub","editAno"].forEach(id=>$(id).innerHTML="<option value=''>-- todos --</option>");
+
+  /* ================= FILTROS LISTA DE EDIÇÃO - LÓGICA CORRIGIDA ================= */
+  
+  function popularFiltrosEdicao(data) {
+    const tipo = $("editTipo").value;
+    const marca = $("editMarca").value;
+    const modelo = $("editModelo").value;
+
+    // 1. Oculta Submodelo se for Rastreador
+    $("editSubWrap").style.display = tipo === 'rastreador' ? 'none' : 'block';
+
+    // 2. Popula Marca (baseado no Tipo)
+    const currentMarca = $("editMarca").value;
+    clearOptions("editMarca");
+    const marcasUn = [...new Set(data.filter(v => !tipo || v.tipo === tipo).map(v => v.marca))].sort();
+    marcasUn.forEach(v => addOpt('editMarca', v));
+    $("editMarca").value = currentMarca; 
     
-    // Filtros planos (popula com todas as opções existentes no banco)
-    const marcasUn = [...new Set(userDB.map(v=>v.marca))].sort();
-    const modelosUn = [...new Set(userDB.map(v=>v.modelo))].sort();
-    const subsUn = [...new Set(userDB.map(v=>v.submodelo).filter(x=>x))].sort();
-    const anosUn = [...new Set(userDB.map(v=>v.ano))].sort();
-    
-    marcasUn.forEach(v=>addOpt('editMarca',v)); 
-    modelosUn.forEach(v=>addOpt('editModelo',v));
-    subsUn.forEach(v=>addOpt('editSub',v));
-    anosUn.forEach(v=>addOpt('editAno',v));
+    // 3. Popula Modelo (baseado no Tipo e Marca)
+    const currentModelo = $("editModelo").value;
+    clearOptions("editModelo");
+    const modelosUn = [...new Set(data.filter(v => 
+        (!tipo || v.tipo === tipo) && 
+        (!marca || v.marca === marca)
+    ).map(v => v.modelo))].sort();
+    modelosUn.forEach(v => addOpt('editModelo', v));
+    $("editModelo").value = currentModelo;
+
+    // 4. Popula Submodelo (baseado em Tipo, Marca e Modelo - exceto Rastreador)
+    const currentSub = $("editSub").value;
+    clearOptions("editSub");
+    if (tipo !== 'rastreador') {
+        const subsUn = [...new Set(data.filter(v =>
+            v.submodelo && 
+            (!tipo || v.tipo === tipo) && 
+            (!marca || v.marca === marca) &&
+            (!modelo || v.modelo === modelo)
+        ).map(v => v.submodelo))].sort();
+        subsUn.forEach(v => addOpt('editSub', v));
+    }
+    $("editSub").value = currentSub;
+
+    // 5. Popula Ano (baseado em todos os filtros anteriores)
+    popularAnosEdicao();
   }
 
+  function popularAnosEdicao() {
+    const tipo = $("editTipo").value;
+    const marca = $("editMarca").value;
+    const modelo = $("editModelo").value;
+    const sub = $("editSub").value;
+    const currentAno = $("editAno").value;
+
+    clearOptions("editAno");
+
+    const anosUn = [...new Set(userDB.filter(v => 
+        (!tipo || v.tipo === tipo) &&
+        (!marca || v.marca === marca) &&
+        (!modelo || v.modelo === modelo) &&
+        (tipo === 'rastreador' || !sub || v.submodelo === sub) 
+    ).map(v => v.ano))].sort();
+
+    anosUn.forEach(v => addOpt('editAno', v));
+    $("editAno").value = currentAno;
+  }
+  
+  window.filtrarEdicao = function() {
+    const termo = $("editSearchInput").value.toLowerCase().trim();
+    const tipo = $("editTipo").value;
+    const marca = $("editMarca").value;
+    const modelo = $("editModelo").value;
+    const sub = $("editSub").value;
+    const ano = $("editAno").value;
+    
+    let lista = userDB.filter(v => {
+      const fullString = `${v.marca} ${v.modelo} ${v.submodelo} ${v.ano}`.toLowerCase();
+      const matchTexto = !termo || termo.split(" ").every(t => fullString.includes(t));
+
+      const matchTipo = !tipo || v.tipo === tipo;
+      const matchMarca = !marca || v.marca === marca;
+      const matchModelo = !modelo || v.modelo === modelo;
+      const matchSub = !sub || v.submodelo === sub;
+      const matchAno = !ano || v.ano === ano;
+
+      return matchTexto && matchTipo && matchMarca && matchModelo && matchSub && matchAno;
+    });
+
+    renderLista(lista);
+  };
+
+  // Listeners de filtro para atualizar a cascata E filtrar a lista.
+  // IMPORTANTE: Chamamos popularFiltrosEdicao para manter a cascata e, no final dela, chamamos popularAnosEdicao.
+  // O filtrarEdicao deve ser chamado em todos os eventos para atualizar a lista.
+
+  $("editTipo").onchange = () => { 
+      // Resetar os filtros dependentes para começar a nova cascata
+      clearOptions("editMarca"); clearOptions("editModelo"); clearOptions("editSub"); clearOptions("editAno");
+      popularFiltrosEdicao(userDB); 
+      filtrarEdicao(); // Filtra imediatamente
+  }; 
+  
+  $("editMarca").onchange = () => { 
+      // Resetar os filtros dependentes
+      clearOptions("editModelo"); clearOptions("editSub"); clearOptions("editAno");
+      popularFiltrosEdicao(userDB); 
+      filtrarEdicao(); // Filtra imediatamente
+  };
+  
+  $("editModelo").onchange = () => { 
+      // Resetar os filtros dependentes
+      clearOptions("editSub"); clearOptions("editAno");
+      popularFiltrosEdicao(userDB); 
+      filtrarEdicao(); // Filtra imediatamente
+  };
+  
+  $("editSub").onchange = () => { 
+      popularAnosEdicao(); // Popula Ano com base no novo Submodelo
+      filtrarEdicao(); // Filtra imediatamente
+  }; 
+  
+  $("editAno").onchange = filtrarEdicao; // Filtra imediatamente
+
+  /* ================= LISTAGEM E RENDERIZAÇÃO ================= */
+  
   function renderLista(lista=null){
     lista = lista || userDB;
     let c = $("listaVeiculos"); c.innerHTML = "";
@@ -769,7 +1041,7 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
       <div style='display:flex;align-items:center;justify-content:space-between'>
         <div>
            <strong>${v.marca} ${v.modelo}</strong> (${v.ano})<br>
-           <span style="font-size:12px;color:#666">${qtdOpcoes} local(is) | ${v.submodelo || ''}</span>
+           <span style="font-size:12px;color:#666">${qtdOpcoes} local(is) ${v.submodelo && v.tipo !== 'rastreador' ? '| '+v.submodelo : ''}</span>
         </div>
         <div style="display:flex; gap:8px;">
             <button class='btn btn-sec' onclick="editarVeiculo('${v.id}')">Editar</button>
@@ -779,12 +1051,6 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
       c.appendChild(d);
     });
   }
-
-  $("editTipo").onchange = filtrarEdicao;
-  $("editMarca").onchange = filtrarEdicao;
-  $("editModelo").onchange = filtrarEdicao;
-  $("editSub").onchange = filtrarEdicao;
-  $("editAno").onchange = filtrarEdicao;
 </script>
 </body>
 </html>
