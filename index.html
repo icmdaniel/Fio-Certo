@@ -194,10 +194,9 @@ let db = [];
   db = [...userDB];
 })();
 
-
 const $=id=>document.getElementById(id);
 let editarIndex=null; // internal index used after finding by id
-
+  
 /* ============================================================== */
 /* ====================== CADASTRO ============================== */
 /* ============================================================== */
@@ -230,7 +229,7 @@ function preencherAddMarca(){
 $("addTipo").addEventListener("change",preencherAddMarca);
 
 /* SALVAR */
-$("btnSalvar").onclick=()=>{
+$("btnSalvar").onclick=async ()=>{
   const v={
     tipo:$("addTipo").value,
     marca:$("addMarca").value,
@@ -245,25 +244,17 @@ $("btnSalvar").onclick=()=>{
   };
   if(!v.tipo||!v.marca||!v.modelo||!v.ano){alert("Preencha os campos obrigatórios!");return;}
 
-  // if editing, preserve id
   if(editarIndex!==null && userDB[editarIndex]){
     v.id = userDB[editarIndex].id;
+    await window.dbCloud.updateCloudVehicle(v.id, v);
     userDB[editarIndex] = v;
   } else {
-    v.id = Date.now().toString() + Math.floor(Math.random()*1000);
+    const novoId = await window.dbCloud.saveCloudVehicle(v);
+    v.id = novoId;
     userDB.push(v);
   }
 
-  if (editarIndex !== null && userDB[editarIndex]) {
-  await window.dbCloud.updateCloudVehicle(v.id, v);
-  userDB[editarIndex] = v;
-} else {
-  const novoId = await window.dbCloud.saveCloudVehicle(v);
-  v.id = novoId;
-  userDB.push(v);
-}
-
-db = [...userDB];
+  db = [...userDB];
 
   fecharModal();
   if($("editarAba").style.display==="block") renderLista();
@@ -292,6 +283,8 @@ $("tipoSelect").addEventListener("change",()=>{
     $("marcaWrap").style.display="block";
     $("marcaSelect").innerHTML = "<option value=''>-- selecione --</option>";
     marcas[$("tipoSelect").value].forEach(m=>addOpt("marcaSelect",m));
+  } else {
+    $("marcaWrap").style.display="none";
   }
 });
 
@@ -303,6 +296,8 @@ $("marcaSelect").addEventListener("change",()=>{
     $("modeloWrap").style.display="block";
     $("modeloSelect").innerHTML = "<option value=''>-- selecione --</option>";
     modelos.forEach(v=>addOpt("modeloSelect",v));
+  } else {
+    $("modeloWrap").style.display="none";
   }
 });
 
@@ -310,10 +305,14 @@ $("modeloSelect").addEventListener("change",()=>{
   resetCascata(["submodelo","ano"]);
   let {tipoSelect,marcaSelect,modeloSelect}=ids();
   let subs=[...new Set(db.filter(v=>v.tipo===tipoSelect.value&&v.marca===marcaSelect.value&&v.modelo===modeloSelect.value).map(v=>v.submodelo).filter(s=>s))];
-  $("subWrap").style.display="block";
-  $("submodeloSelect").innerHTML = "<option value=''>-- selecione --</option>";
-  if(subs.length){subs.forEach(v=>addOpt("submodeloSelect",v));}
-  else popularAnos(tipoSelect.value,marcaSelect.value,modeloSelect.value,"");
+  if(subs.length){
+    $("subWrap").style.display="block";
+    $("submodeloSelect").innerHTML = "<option value=''>-- selecione --</option>";
+    subs.forEach(v=>addOpt("submodeloSelect",v));
+  } else {
+    $("subWrap").style.display="none";
+    popularAnos(tipoSelect.value,marcaSelect.value,modeloSelect.value,"");
+  }
 });
 
 $("submodeloSelect").addEventListener("change",()=>{
@@ -383,10 +382,8 @@ function ids(){
 /* ==================== FILTROS DE EDIÇÃO ======================= */
 /* ============================================================== */
 function popularFiltros(){
-  // clear
   ["editMarca","editModelo","editSub","editAno"].forEach(id=>$(id).innerHTML="<option value=''>-- todos --</option>");
 
-  // populate from userDB
   const marcasUn = [...new Set(userDB.map(v=>v.marca))].sort();
   const modelosUn = [...new Set(userDB.map(v=>v.modelo))].sort();
   const subsUn = [...new Set(userDB.map(v=>v.submodelo).filter(v=>v))].sort();
@@ -397,14 +394,12 @@ function popularFiltros(){
   subsUn.forEach(v=>addOpt('editSub',v));
   anosUn.forEach(v=>addOpt('editAno',v));
 
-  // attach cascade listeners for edit filters
   $("editTipo").onchange = updateEditMarcaModelSub;
   $("editMarca").onchange = updateEditModelSub;
   $("editModelo").onchange = updateEditSub;
 }
 
 function updateEditMarcaModelSub(){
-  // when type changes, rebuild editMarca based on type
   const t = $("editTipo").value;
   clearOptions('editMarca','-- todos --');
   clearOptions('editModelo','-- todos --');
@@ -465,7 +460,6 @@ function renderLista(lista=null){
 }
 
 function editarVeiculo(id){
-  // find index by id to avoid mismatch
   const idx = userDB.findIndex(x=>x.id===id);
   if(idx===-1){alert('Veículo não encontrado (pode ter sido removido).');return;}
   editarIndex=idx;
@@ -486,14 +480,23 @@ function editarVeiculo(id){
   $("addBloqueio").value=v.bloqueio;
 }
 
-// initialize edit filters listeners so they exist even before opening
 $("editTipo").addEventListener('change', updateEditMarcaModelSub);
 $("editMarca").addEventListener('change', updateEditModelSub);
 $("editModelo").addEventListener('change', updateEditSub);
 
-// keep db in sync when storage changes elsewhere
-window.addEventListener('storage',()=>{ userDB = loadUser(); db=[...defaultDB,...userDB]; if($("editarAba").style.display==="block") { popularFiltros(); renderLista(); }});
-
+window.addEventListener('storage',()=>{ 
+  // Assumindo loadUser() definida no db_cloud.js, ajuste se necessário
+  if(window.dbCloud && window.dbCloud.loadCloudDB){
+    window.dbCloud.loadCloudDB().then(data=>{
+      userDB = data;
+      db = [...userDB];
+      if($("editarAba").style.display==="block") { 
+        popularFiltros(); 
+        renderLista(); 
+      }
+    });
+  }
+});
 </script>
 <script type="module" src="firebase.js"></script>
 <script type="module" src="db_cloud.js"></script>
@@ -507,6 +510,6 @@ window.dbCloud = {
   updateCloudVehicle
 };
 </script>
-  
+
 </body>
 </html>
