@@ -186,11 +186,14 @@ const marcas = {
 };
 
 /* ================= DB ================= */
-const defaultDB=[]; // keep empty or preload standard records (must include id if present)
-function loadUser(){return JSON.parse(localStorage.getItem("db")||"[]");}
-function saveUser(){localStorage.setItem("db",JSON.stringify(userDB));}
-let userDB=loadUser();
-let db=[...defaultDB,...userDB];
+let userDB = [];
+let db = [];
+
+(async () => {
+  userDB = await window.dbCloud.loadCloudDB();
+  db = [...userDB];
+})();
+
 
 const $=id=>document.getElementById(id);
 let editarIndex=null; // internal index used after finding by id
