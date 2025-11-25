@@ -482,5 +482,25 @@ $("editModelo").addEventListener('change', updateEditSub);
 window.addEventListener('storage',()=>{ userDB = loadUser(); db=[...defaultDB,...userDB]; if($("editarAba").style.display==="block") { popularFiltros(); renderLista(); }});
 
 </script>
+<script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
+
+  // Your web app's Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyAINZiFRep2cG8KyorP5_bi2lSEqSFoI_Q",
+    authDomain: "fio-certo.firebaseapp.com",
+    databaseURL: "https://fio-certo-default-rtdb.firebaseio.com",
+    projectId: "fio-certo",
+    storageBucket: "fio-certo.firebasestorage.app",
+    messagingSenderId: "152915023014",
+    appId: "1:152915023014:web:216307b7b15a1479cbd067"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+</script>
 </body>
 </html>
