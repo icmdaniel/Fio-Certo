@@ -254,7 +254,17 @@ $("btnSalvar").onclick=()=>{
     userDB.push(v);
   }
 
-  saveUser(); db=[...defaultDB,...userDB];
+  if (editarIndex !== null && userDB[editarIndex]) {
+  await window.dbCloud.updateCloudVehicle(v.id, v);
+  userDB[editarIndex] = v;
+} else {
+  const novoId = await window.dbCloud.saveCloudVehicle(v);
+  v.id = novoId;
+  userDB.push(v);
+}
+
+db = [...userDB];
+
   fecharModal();
   if($("editarAba").style.display==="block") renderLista();
 };
