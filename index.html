@@ -482,5 +482,17 @@ $("editModelo").addEventListener('change', updateEditSub);
 window.addEventListener('storage',()=>{ userDB = loadUser(); db=[...defaultDB,...userDB]; if($("editarAba").style.display==="block") { popularFiltros(); renderLista(); }});
 
 </script>
+<script type="module" src="firebase.js"></script>
+<script type="module" src="db_cloud.js"></script>
+
+<script type="module">
+import { loadCloudDB, saveCloudVehicle, updateCloudVehicle } from "./db_cloud.js";
+
+window.dbCloud = {
+  loadCloudDB,
+  saveCloudVehicle,
+  updateCloudVehicle
+};
+</script>
 </body>
 </html>
