@@ -54,9 +54,7 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
     </div>
   </div>
 
-  <!-- GRID PRINCIPAL -->
   <div class="grid" id="gridPrincipal">
-    <!-- BUSCA -->
     <div class="card">
       <label>Tipo do veículo</label>
       <select id="tipoSelect">
@@ -92,14 +90,12 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
       </div>
     </div>
 
-    <!-- RESULTADO -->
     <div class="card">
       <h3 class="resultTitle">Resultado</h3>
       <div id="resultado" class="resultBox"style="font-family:Verdana;font-size:20px;">Nenhuma busca realizada.</div>
     </div>
   </div>
 
-  <!-- EDIÇÃO -->
   <div id="editarAba" style="display:none;">
     <div class="card">
       <div class="row" style="justify-content:flex-end;margin-bottom:8px;">
@@ -135,7 +131,6 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
 
 </div>
 
-<!-- MODAL -->
 <div id="overlay"></div>
 <div id="modal">
   <div class="modalHeader">
@@ -143,7 +138,7 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
     <button class="modalClose" onclick="fecharModal()">X</button>
   </div>
 
-  <p class="note">Preencha os campos e clique em salvar. Dados ficam salvos no navegador.</p>
+  <p class="note">Preencha os campos e clique em salvar. Os dados serão salvos na nuvem.</p>
 
   <label>Tipo</label>
   <select id="addTipo">
@@ -177,330 +172,361 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
   </div>
 </div>
 
-<script>
-/* ================= MARCAS ================= */
-const marcas = {
-  carro:["Fiat","Volkswagen","Chevrolet","Toyota","Ford","Renault","Peugeot","Citroën","Honda","Hyundai","Land Rover","Ram","BYD"],
-  moto:["Honda","Yamaha","Suzuki","BMW","Shineray","Dafra","Kawasaki"],
-  caminhao:["Volvo","Scania","Mercedes-Benz","Volkswagen Caminhões","Iveco","Ford","Renault Trucks","Hyundai HR / Kia Bongo"]
-};
-
-/* ================= DB ================= */
-const defaultDB=[]; // keep empty or preload standard records (must include id if present)
-function loadUser(){return JSON.parse(localStorage.getItem("db")||"[]");}
-function saveUser(){localStorage.setItem("db",JSON.stringify(userDB));}
-let userDB=loadUser();
-let db=[...defaultDB,...userDB];
-
-const $=id=>document.getElementById(id);
-let editarIndex=null; // internal index used after finding by id
-
-/* ============================================================== */
-/* ====================== CADASTRO ============================== */
-/* ============================================================== */
-function abrirCadastro(){
-  editarIndex=null;
-  $("modalTitle").innerText="Cadastrar veículo";
-  $("addTipo").value="carro";
-  preencherAddMarca();
-  ["addMarca","addModelo","addSubmodelo","addAno","addLocal",
-   "addPositivo","addNegativo","addPosChave","addBloqueio"].forEach(id=>$(id).value="");
-  $("overlay").style.display="block";
-  $("modal").style.display="block";
-}
-
-function fecharModal(){
-  $("overlay").style.display="none";
-  $("modal").style.display="none";
-  editarIndex=null;
-}
-
-function preencherAddMarca(){
-  const t=$("addTipo").value;
-  $("addMarca").innerHTML="";
-  marcas[t].forEach(m=>{
-    let o=document.createElement("option");
-    o.value=m;o.text=m;
-    $("addMarca").appendChild(o);
-  });
-}
-$("addTipo").addEventListener("change",preencherAddMarca);
-
-/* SALVAR */
-$("btnSalvar").onclick=()=>{
-  const v={
-    tipo:$("addTipo").value,
-    marca:$("addMarca").value,
-    modelo:$("addModelo").value.trim(),
-    submodelo:$("addSubmodelo").value.trim(),
-    ano:$("addAno").value.trim(),
-    local:$("addLocal").value.trim(),
-    positivo:$("addPositivo").value.trim(),
-    negativo:$("addNegativo").value.trim(),
-    posChave:$("addPosChave").value.trim(),
-    bloqueio:$("addBloqueio").value.trim()
-  };
-  if(!v.tipo||!v.marca||!v.modelo||!v.ano){alert("Preencha os campos obrigatórios!");return;}
-
-  // if editing, preserve id
-  if(editarIndex!==null && userDB[editarIndex]){
-    v.id = userDB[editarIndex].id;
-    userDB[editarIndex] = v;
-  } else {
-    v.id = Date.now().toString() + Math.floor(Math.random()*1000);
-    userDB.push(v);
-  }
-
-  saveUser(); db=[...defaultDB,...userDB];
-  fecharModal();
-  if($("editarAba").style.display==="block") renderLista();
-};
-
-/* ============================================================== */
-/* ==================== ABERTURA EDIÇÃO ========================= */
-/* ============================================================== */
-function abrirEditar(){
-  $("editarAba").style.display="block";
-  $("gridPrincipal").style.display="none";
-  popularFiltros();
-  renderLista();
-}
-function voltarBusca(){
-  $("editarAba").style.display="none";
-  $("gridPrincipal").style.display="grid";
-}
-
-/* ============================================================== */
-/* ======================= BUSCA PRINCIPAL ====================== */
-/* ============================================================== */
-$("tipoSelect").addEventListener("change",()=>{
-  resetCascata(["marca","modelo","submodelo","ano"]);
-  if($("tipoSelect").value){
-    $("marcaWrap").style.display="block";
-    $("marcaSelect").innerHTML = "<option value=''>-- selecione --</option>";
-    marcas[$("tipoSelect").value].forEach(m=>addOpt("marcaSelect",m));
-  }
-});
-
-$("marcaSelect").addEventListener("change",()=>{
-  resetCascata(["modelo","submodelo","ano"]);
-  let {tipoSelect,marcaSelect}=ids();
-  let modelos=[...new Set(db.filter(v=>v.tipo===tipoSelect.value&&v.marca===marcaSelect.value).map(v=>v.modelo))];
-  if(modelos.length){
-    $("modeloWrap").style.display="block";
-    $("modeloSelect").innerHTML = "<option value=''>-- selecione --</option>";
-    modelos.forEach(v=>addOpt("modeloSelect",v));
-  }
-});
-
-$("modeloSelect").addEventListener("change",()=>{
-  resetCascata(["submodelo","ano"]);
-  let {tipoSelect,marcaSelect,modeloSelect}=ids();
-  let subs=[...new Set(db.filter(v=>v.tipo===tipoSelect.value&&v.marca===marcaSelect.value&&v.modelo===modeloSelect.value).map(v=>v.submodelo).filter(s=>s))];
-  $("subWrap").style.display="block";
-  $("submodeloSelect").innerHTML = "<option value=''>-- selecione --</option>";
-  if(subs.length){subs.forEach(v=>addOpt("submodeloSelect",v));}
-  else popularAnos(tipoSelect.value,marcaSelect.value,modeloSelect.value,"");
-});
-
-$("submodeloSelect").addEventListener("change",()=>{
-  popularAnos($("tipoSelect").value,$("marcaSelect").value,$("modeloSelect").value,$("submodeloSelect").value);
-});
-
-function popularAnos(t,m,mo,s){
-  resetCascata(["ano"]);
-  $("anoWrap").style.display="block";
-  [...new Set(db.filter(v=>v.tipo===t&&v.marca===m&&v.modelo===mo&&(s?v.submodelo===s:true)).map(v=>v.ano))]
-  .sort().forEach(a=>addOpt("anoSelect",a));
-}
-
-function buscar(){
-  let {tipoSelect,marcaSelect,modeloSelect,submodeloSelect,anoSelect}=ids();
-  let r=db.find(v=>v.tipo===tipoSelect.value&&v.marca===marcaSelect.value&&v.modelo===modeloSelect.value
-    &&(v.submodelo||"")===submodeloSelect.value&&v.ano===anoSelect.value);
-  if(!r){$("resultado").innerText="Nenhum padrão encontrado.";return;}
-  $("resultado").innerHTML=
-  `<div style="font-family:Verdana;font-size:20px; color:white;">Local: ${r.local}</div>
-<div style="font-family:Verdana;font-size:20px; color:white;">Positivo: ${r.positivo}</div>
-<div style="font-family:Verdana;font-size:20px; color:white;">Negativo: ${r.negativo}</div>
-<div style="font-family:Verdana;font-size:20px; color:white;">Pós-chave: ${r.posChave}</div>
-<div style="font-family:Verdana;font-size:20px; color:white;">Bloqueio: ${r.bloqueio}</div>
-<div style="margin-top:10px;text-align:right;"><button class='btn btn-sec' onclick="editarVeiculo('${r.id}')">Editar este</button></div>`;
-}
-
-function resetBusca(){
-  ["tipoSelect","marcaSelect","modeloSelect","submodeloSelect","anoSelect"].forEach(id=>$(id).value="");
-  ["marcaWrap","modeloWrap","subWrap","anoWrap"].forEach(id=>$(id).style.display="none");
-  $("resultado").innerText="Nenhuma busca realizada.";
-}
-
-/* ============================================================== */
-/* ======================= FUNÇÕES BASE ========================= */
-/* ============================================================== */
-function addOpt(id,v){
-  let o=document.createElement("option");
-  o.value=v;o.text=v;
-  $(id).appendChild(o);
-}
-function clearOptions(id,placeholder){
-  const el = $(id);
-  if(!el) return;
-  el.innerHTML = "";
-  let o = document.createElement('option');
-  o.value=''; o.text = placeholder||'-- selecione --';
-  el.appendChild(o);
-}
-function resetCascata(ids){
-  ids.forEach(n=>{
-    const el = $(n+"Select");
-    if(el) el.innerHTML="<option value=''>-- selecione --</option>";
-  });
-}
-function ids(){
-  return {
-    tipoSelect:$("tipoSelect"),
-    marcaSelect:$("marcaSelect"),
-    modeloSelect:$("modeloSelect"),
-    submodeloSelect:$("submodeloSelect"),
-    anoSelect:$("anoSelect")
-  };
-}
-
-/* ============================================================== */
-/* ==================== FILTROS DE EDIÇÃO ======================= */
-/* ============================================================== */
-function popularFiltros(){
-  // clear
-  ["editMarca","editModelo","editSub","editAno"].forEach(id=>$(id).innerHTML="<option value=''>-- todos --</option>");
-
-  // populate from userDB
-  const marcasUn = [...new Set(userDB.map(v=>v.marca))].sort();
-  const modelosUn = [...new Set(userDB.map(v=>v.modelo))].sort();
-  const subsUn = [...new Set(userDB.map(v=>v.submodelo).filter(v=>v))].sort();
-  const anosUn = [...new Set(userDB.map(v=>v.ano))].sort();
-
-  marcasUn.forEach(v=>addOpt('editMarca',v));
-  modelosUn.forEach(v=>addOpt('editModelo',v));
-  subsUn.forEach(v=>addOpt('editSub',v));
-  anosUn.forEach(v=>addOpt('editAno',v));
-
-  // attach cascade listeners for edit filters
-  $("editTipo").onchange = updateEditMarcaModelSub;
-  $("editMarca").onchange = updateEditModelSub;
-  $("editModelo").onchange = updateEditSub;
-}
-
-function updateEditMarcaModelSub(){
-  // when type changes, rebuild editMarca based on type
-  const t = $("editTipo").value;
-  clearOptions('editMarca','-- todos --');
-  clearOptions('editModelo','-- todos --');
-  clearOptions('editSub','-- todos --');
-  clearOptions('editAno','-- todos --');
-
-  const filtered = userDB.filter(v=> !t || v.tipo===t);
-  [...new Set(filtered.map(v=>v.marca))].sort().forEach(v=>addOpt('editMarca',v));
-  [...new Set(filtered.map(v=>v.modelo))].sort().forEach(v=>addOpt('editModelo',v));
-  [...new Set(filtered.map(v=>v.submodelo).filter(x=>x))].sort().forEach(v=>addOpt('editSub',v));
-  [...new Set(filtered.map(v=>v.ano))].sort().forEach(v=>addOpt('editAno',v));
-}
-function updateEditModelSub(){
-  const t = $("editTipo").value; const m = $("editMarca").value;
-  clearOptions('editModelo','-- todos --');
-  clearOptions('editSub','-- todos --');
-  clearOptions('editAno','-- todos --');
-  const filtered = userDB.filter(v=> (!t||v.tipo===t) && (!m||v.marca===m));
-  [...new Set(filtered.map(v=>v.modelo))].sort().forEach(v=>addOpt('editModelo',v));
-  [...new Set(filtered.map(v=>v.submodelo).filter(x=>x))].sort().forEach(v=>addOpt('editSub',v));
-  [...new Set(filtered.map(v=>v.ano))].sort().forEach(v=>addOpt('editAno',v));
-}
-function updateEditSub(){
-  const t = $("editTipo").value; const m = $("editMarca").value; const mo = $("editModelo").value;
-  clearOptions('editSub','-- todos --');
-  clearOptions('editAno','-- todos --');
-  const filtered = userDB.filter(v=> (!t||v.tipo===t) && (!m||v.marca===m) && (!mo||v.modelo===mo));
-  [...new Set(filtered.map(v=>v.submodelo).filter(x=>x))].sort().forEach(v=>addOpt('editSub',v));
-  [...new Set(filtered.map(v=>v.ano))].sort().forEach(v=>addOpt('editAno',v));
-}
-
-function filtrarEdicao(){
-  let lista=userDB.filter(v=>
-    (!$("editTipo").value||v.tipo===$("editTipo").value)&&
-    (!$("editMarca").value||v.marca===$("editMarca").value)&&
-    (!$("editModelo").value||v.modelo===$("editModelo").value)&&
-    (!$("editSub").value||v.submodelo===$("editSub").value)&&
-    (!$("editAno").value||v.ano===$("editAno").value));
-  renderLista(lista);
-}
-
-/* ============================================================== */
-/* ==================== LISTAGEM/EDIÇÃO ========================= */
-/* ============================================================== */
-function renderLista(lista=null){
-  lista=lista||userDB;
-  let c=$("listaVeiculos"); c.innerHTML="";
-  if(!lista.length){c.innerHTML="<i>Nenhum veículo encontrado</i>";return;}
-  lista.forEach((v,i)=>{
-    let d=document.createElement("div");
-    d.style="padding:6px 0;border-bottom:1px solid #ddd;";
-    d.innerHTML=`<div style='display:flex;align-items:center;justify-content:space-between'>
-      <div>${v.tipo} | ${v.marca} | ${v.modelo} | ${v.submodelo||""} | ${v.ano}</div>
-      <div><button class='btn btn-sec' onclick="editarVeiculo('${v.id}')">Editar</button></div>
-    </div>`;
-    c.appendChild(d);
-  });
-}
-
-function editarVeiculo(id){
-  // find index by id to avoid mismatch
-  const idx = userDB.findIndex(x=>x.id===id);
-  if(idx===-1){alert('Veículo não encontrado (pode ter sido removido).');return;}
-  editarIndex=idx;
-  let v=userDB[idx];
-  $("modalTitle").innerText="Editar veículo";
-  $("overlay").style.display="block";
-  $("modal").style.display="block";
-  $("addTipo").value=v.tipo;
-  preencherAddMarca();
-  $("addMarca").value=v.marca;
-  $("addModelo").value=v.modelo;
-  $("addSubmodelo").value=v.submodelo;
-  $("addAno").value=v.ano;
-  $("addLocal").value=v.local;
-  $("addPositivo").value=v.positivo;
-  $("addNegativo").value=v.negativo;
-  $("addPosChave").value=v.posChave;
-  $("addBloqueio").value=v.bloqueio;
-}
-
-// initialize edit filters listeners so they exist even before opening
-$("editTipo").addEventListener('change', updateEditMarcaModelSub);
-$("editMarca").addEventListener('change', updateEditModelSub);
-$("editModelo").addEventListener('change', updateEditSub);
-
-// keep db in sync when storage changes elsewhere
-window.addEventListener('storage',()=>{ userDB = loadUser(); db=[...defaultDB,...userDB]; if($("editarAba").style.display==="block") { popularFiltros(); renderLista(); }});
-
-</script>
 <script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
+  // Importar bibliotecas do Firebase via CDN
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics.js";
+  import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-  // Your web app's Firebase configuration
+  // Configuração
   const firebaseConfig = {
-    apiKey: "AIzaSyAINZiFRep2cG8KyorP5_bi2lSEqSFoI_Q",
-    authDomain: "fio-certo.firebaseapp.com",
-    databaseURL: "https://fio-certo-default-rtdb.firebaseio.com",
-    projectId: "fio-certo",
-    storageBucket: "fio-certo.firebasestorage.app",
-    messagingSenderId: "152915023014",
-    appId: "1:152915023014:web:216307b7b15a1479cbd067"
+    apiKey: "AIzaSyB097Hr3Vg55djiCjW8A3m_vhK4Jen-Xlw",
+    authDomain: "fiocertorastreador.firebaseapp.com",
+    projectId: "fiocertorastreador",
+    storageBucket: "fiocertorastreador.firebasestorage.app",
+    messagingSenderId: "735489114974",
+    appId: "1:735489114974:web:40820bcec28e2b252fc5cf",
+    measurementId: "G-2P8HSDLBLZ"
   };
 
-  // Initialize Firebase
+  // Inicializar Firebase
   const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+  const dbFirestore = getFirestore(app);
+  const veiculosCollection = collection(dbFirestore, "veiculos");
+
+  /* ================= MARCAS ================= */
+  const marcas = {
+    carro:["Fiat","Volkswagen","Chevrolet","Toyota","Ford","Renault","Peugeot","Citroën","Honda","Hyundai","Land Rover","Ram","BYD"],
+    moto:["Honda","Yamaha","Suzuki","BMW","Shineray","Dafra","Kawasaki"],
+    caminhao:["Volvo","Scania","Mercedes-Benz","Volkswagen Caminhões","Iveco","Ford","Renault Trucks","Hyundai HR / Kia Bongo"]
+  };
+
+  /* ================= DB & ESTADO ================= */
+  let userDB = []; // Dados vindos do Firestore
+  let db = []; // Dados combinados (se houvesse defaultDB)
+  const defaultDB = []; 
+  const $ = id => document.getElementById(id);
+  let editarIndex = null; 
+
+  /* ================= SINCRONIZAÇÃO FIRESTORE ================= */
+  // Escuta mudanças no banco de dados em tempo real
+  onSnapshot(veiculosCollection, (snapshot) => {
+    userDB = [];
+    snapshot.docs.forEach(doc => {
+      // Adiciona o ID do documento ao objeto
+      userDB.push({ ...doc.data(), id: doc.id });
+    });
+    
+    // Atualiza lista geral
+    db = [...defaultDB, ...userDB];
+    
+    // Se estiver na tela de edição, atualiza a lista visual
+    if($("editarAba").style.display === "block") {
+      popularFiltros();
+      renderLista();
+    }
+    console.log("Dados atualizados do Firebase. Total:", userDB.length);
+  });
+
+  /* ============================================================== */
+  /* ============== FUNÇÕES EXPOSTAS AO WINDOW ==================== */
+  /* ============================================================== */
+  
+  // Como este script é type="module", precisamos fixar as funções no window
+  // para que o HTML (onclick="") consiga enxergá-las.
+
+  window.abrirCadastro = function(){
+    editarIndex = null;
+    $("modalTitle").innerText = "Cadastrar veículo";
+    $("addTipo").value = "carro";
+    preencherAddMarca();
+    ["addMarca","addModelo","addSubmodelo","addAno","addLocal",
+     "addPositivo","addNegativo","addPosChave","addBloqueio"].forEach(id=>$(id).value="");
+    $("overlay").style.display="block";
+    $("modal").style.display="block";
+  }
+
+  window.fecharModal = function(){
+    $("overlay").style.display="none";
+    $("modal").style.display="none";
+    editarIndex=null;
+  }
+
+  window.preencherAddMarca = function(){
+    const t = $("addTipo").value;
+    $("addMarca").innerHTML = "";
+    if(marcas[t]){
+      marcas[t].forEach(m=>{
+        let o=document.createElement("option");
+        o.value=m; o.text=m;
+        $("addMarca").appendChild(o);
+      });
+    }
+  }
+  $("addTipo").addEventListener("change", window.preencherAddMarca);
+
+  /* SALVAR (CREATE/UPDATE NO FIREBASE) */
+  $("btnSalvar").onclick = async () => {
+    const v = {
+      tipo: $("addTipo").value,
+      marca: $("addMarca").value,
+      modelo: $("addModelo").value.trim(),
+      submodelo: $("addSubmodelo").value.trim(),
+      ano: $("addAno").value.trim(),
+      local: $("addLocal").value.trim(),
+      positivo: $("addPositivo").value.trim(),
+      negativo: $("addNegativo").value.trim(),
+      posChave: $("addPosChave").value.trim(),
+      bloqueio: $("addBloqueio").value.trim()
+    };
+    
+    if(!v.tipo || !v.marca || !v.modelo || !v.ano){
+      alert("Preencha os campos obrigatórios!");
+      return;
+    }
+    
+    $("btnSalvar").innerText = "Salvando...";
+    $("btnSalvar").disabled = true;
+
+    try {
+      if(editarIndex !== null && userDB[editarIndex]){
+        // EDITAR
+        const docId = userDB[editarIndex].id;
+        const docRef = doc(dbFirestore, "veiculos", docId);
+        await updateDoc(docRef, v);
+      } else {
+        // NOVO
+        await addDoc(veiculosCollection, v);
+      }
+      window.fecharModal();
+    } catch (e) {
+      console.error("Erro ao salvar:", e);
+      alert("Erro ao salvar no banco de dados.");
+    } finally {
+      $("btnSalvar").innerText = "Salvar";
+      $("btnSalvar").disabled = false;
+    }
+  };
+
+  /* ============================================================== */
+  /* ==================== ABERTURA EDIÇÃO ========================= */
+  /* ============================================================== */
+  window.abrirEditar = function(){
+    $("editarAba").style.display="block";
+    $("gridPrincipal").style.display="none";
+    popularFiltros();
+    renderLista();
+  }
+  window.voltarBusca = function(){
+    $("editarAba").style.display="none";
+    $("gridPrincipal").style.display="grid";
+  }
+
+  /* ============================================================== */
+  /* ======================= BUSCA PRINCIPAL ====================== */
+  /* ============================================================== */
+  $("tipoSelect").addEventListener("change",()=>{
+    resetCascata(["marca","modelo","submodelo","ano"]);
+    if($("tipoSelect").value){
+      $("marcaWrap").style.display="block";
+      $("marcaSelect").innerHTML = "<option value=''>-- selecione --</option>";
+      if(marcas[$("tipoSelect").value]){
+        marcas[$("tipoSelect").value].forEach(m=>addOpt("marcaSelect",m));
+      }
+    }
+  });
+
+  $("marcaSelect").addEventListener("change",()=>{
+    resetCascata(["modelo","submodelo","ano"]);
+    let {tipoSelect,marcaSelect}=ids();
+    let modelos=[...new Set(db.filter(v=>v.tipo===tipoSelect.value&&v.marca===marcaSelect.value).map(v=>v.modelo))];
+    if(modelos.length){
+      $("modeloWrap").style.display="block";
+      $("modeloSelect").innerHTML = "<option value=''>-- selecione --</option>";
+      modelos.forEach(v=>addOpt("modeloSelect",v));
+    }
+  });
+
+  $("modeloSelect").addEventListener("change",()=>{
+    resetCascata(["submodelo","ano"]);
+    let {tipoSelect,marcaSelect,modeloSelect}=ids();
+    let subs=[...new Set(db.filter(v=>v.tipo===tipoSelect.value&&v.marca===marcaSelect.value&&v.modelo===modeloSelect.value).map(v=>v.submodelo).filter(s=>s))];
+    $("subWrap").style.display="block";
+    $("submodeloSelect").innerHTML = "<option value=''>-- selecione --</option>";
+    if(subs.length){subs.forEach(v=>addOpt("submodeloSelect",v));}
+    else popularAnos(tipoSelect.value,marcaSelect.value,modeloSelect.value,"");
+  });
+
+  $("submodeloSelect").addEventListener("change",()=>{
+    popularAnos($("tipoSelect").value,$("marcaSelect").value,$("modeloSelect").value,$("submodeloSelect").value);
+  });
+
+  function popularAnos(t,m,mo,s){
+    resetCascata(["ano"]);
+    $("anoWrap").style.display="block";
+    [...new Set(db.filter(v=>v.tipo===t&&v.marca===m&&v.modelo===mo&&(s?v.submodelo===s:true)).map(v=>v.ano))]
+    .sort().forEach(a=>addOpt("anoSelect",a));
+  }
+
+  window.buscar = function(){
+    let {tipoSelect,marcaSelect,modeloSelect,submodeloSelect,anoSelect}=ids();
+    let r=db.find(v=>v.tipo===tipoSelect.value&&v.marca===marcaSelect.value&&v.modelo===modeloSelect.value
+      &&(v.submodelo||"")===submodeloSelect.value&&v.ano===anoSelect.value);
+    if(!r){$("resultado").innerText="Nenhum padrão encontrado.";return;}
+    $("resultado").innerHTML=
+    `<div style="font-family:Verdana;font-size:20px; color:white;">Local: ${r.local}</div>
+    <div style="font-family:Verdana;font-size:20px; color:white;">Positivo: ${r.positivo}</div>
+    <div style="font-family:Verdana;font-size:20px; color:white;">Negativo: ${r.negativo}</div>
+    <div style="font-family:Verdana;font-size:20px; color:white;">Pós-chave: ${r.posChave}</div>
+    <div style="font-family:Verdana;font-size:20px; color:white;">Bloqueio: ${r.bloqueio}</div>
+    <div style="margin-top:10px;text-align:right;"><button class='btn btn-sec' onclick="editarVeiculo('${r.id}')">Editar este</button></div>`;
+  }
+
+  window.resetBusca = function(){
+    ["tipoSelect","marcaSelect","modeloSelect","submodeloSelect","anoSelect"].forEach(id=>$(id).value="");
+    ["marcaWrap","modeloWrap","subWrap","anoWrap"].forEach(id=>$(id).style.display="none");
+    $("resultado").innerText="Nenhuma busca realizada.";
+  }
+
+  /* ======================= HELPER FUNCTIONS ======================= */
+  function addOpt(id,v){
+    let o=document.createElement("option");
+    o.value=v;o.text=v;
+    $(id).appendChild(o);
+  }
+  function clearOptions(id,placeholder){
+    const el = $(id);
+    if(!el) return;
+    el.innerHTML = "";
+    let o = document.createElement('option');
+    o.value=''; o.text = placeholder||'-- selecione --';
+    el.appendChild(o);
+  }
+  function resetCascata(idsList){
+    idsList.forEach(n=>{
+      const el = $(n+"Select");
+      if(el) el.innerHTML="<option value=''>-- selecione --</option>";
+    });
+  }
+  function ids(){
+    return {
+      tipoSelect:$("tipoSelect"),
+      marcaSelect:$("marcaSelect"),
+      modeloSelect:$("modeloSelect"),
+      submodeloSelect:$("submodeloSelect"),
+      anoSelect:$("anoSelect")
+    };
+  }
+
+  /* ============================================================== */
+  /* ==================== FILTROS DE EDIÇÃO ======================= */
+  /* ============================================================== */
+  window.popularFiltros = function(){
+    ["editMarca","editModelo","editSub","editAno"].forEach(id=>$(id).innerHTML="<option value=''>-- todos --</option>");
+
+    const marcasUn = [...new Set(userDB.map(v=>v.marca))].sort();
+    const modelosUn = [...new Set(userDB.map(v=>v.modelo))].sort();
+    const subsUn = [...new Set(userDB.map(v=>v.submodelo).filter(v=>v))].sort();
+    const anosUn = [...new Set(userDB.map(v=>v.ano))].sort();
+
+    marcasUn.forEach(v=>addOpt('editMarca',v));
+    modelosUn.forEach(v=>addOpt('editModelo',v));
+    subsUn.forEach(v=>addOpt('editSub',v));
+    anosUn.forEach(v=>addOpt('editAno',v));
+
+    $("editTipo").onchange = updateEditMarcaModelSub;
+    $("editMarca").onchange = updateEditModelSub;
+    $("editModelo").onchange = updateEditSub;
+  }
+
+  function updateEditMarcaModelSub(){
+    const t = $("editTipo").value;
+    clearOptions('editMarca','-- todos --');
+    clearOptions('editModelo','-- todos --');
+    clearOptions('editSub','-- todos --');
+    clearOptions('editAno','-- todos --');
+
+    const filtered = userDB.filter(v=> !t || v.tipo===t);
+    [...new Set(filtered.map(v=>v.marca))].sort().forEach(v=>addOpt('editMarca',v));
+    [...new Set(filtered.map(v=>v.modelo))].sort().forEach(v=>addOpt('editModelo',v));
+    [...new Set(filtered.map(v=>v.submodelo).filter(x=>x))].sort().forEach(v=>addOpt('editSub',v));
+    [...new Set(filtered.map(v=>v.ano))].sort().forEach(v=>addOpt('editAno',v));
+  }
+  function updateEditModelSub(){
+    const t = $("editTipo").value; const m = $("editMarca").value;
+    clearOptions('editModelo','-- todos --');
+    clearOptions('editSub','-- todos --');
+    clearOptions('editAno','-- todos --');
+    const filtered = userDB.filter(v=> (!t||v.tipo===t) && (!m||v.marca===m));
+    [...new Set(filtered.map(v=>v.modelo))].sort().forEach(v=>addOpt('editModelo',v));
+    [...new Set(filtered.map(v=>v.submodelo).filter(x=>x))].sort().forEach(v=>addOpt('editSub',v));
+    [...new Set(filtered.map(v=>v.ano))].sort().forEach(v=>addOpt('editAno',v));
+  }
+  function updateEditSub(){
+    const t = $("editTipo").value; const m = $("editMarca").value; const mo = $("editModelo").value;
+    clearOptions('editSub','-- todos --');
+    clearOptions('editAno','-- todos --');
+    const filtered = userDB.filter(v=> (!t||v.tipo===t) && (!m||v.marca===m) && (!mo||v.modelo===mo));
+    [...new Set(filtered.map(v=>v.submodelo).filter(x=>x))].sort().forEach(v=>addOpt('editSub',v));
+    [...new Set(filtered.map(v=>v.ano))].sort().forEach(v=>addOpt('editAno',v));
+  }
+
+  window.filtrarEdicao = function(){
+    let lista=userDB.filter(v=>
+      (!$("editTipo").value||v.tipo===$("editTipo").value)&&
+      (!$("editMarca").value||v.marca===$("editMarca").value)&&
+      (!$("editModelo").value||v.modelo===$("editModelo").value)&&
+      (!$("editSub").value||v.submodelo===$("editSub").value)&&
+      (!$("editAno").value||v.ano===$("editAno").value));
+    renderLista(lista);
+  }
+
+  /* ============================================================== */
+  /* ==================== LISTAGEM/EDIÇÃO ========================= */
+  /* ============================================================== */
+  window.renderLista = function(lista=null){
+    lista=lista||userDB;
+    let c=$("listaVeiculos"); c.innerHTML="";
+    if(!lista.length){c.innerHTML="<i>Nenhum veículo encontrado</i>";return;}
+    lista.forEach((v,i)=>{
+      let d=document.createElement("div");
+      d.style="padding:6px 0;border-bottom:1px solid #ddd;";
+      d.innerHTML=`<div style='display:flex;align-items:center;justify-content:space-between'>
+        <div>${v.tipo} | ${v.marca} | ${v.modelo} | ${v.submodelo||""} | ${v.ano}</div>
+        <div><button class='btn btn-sec' onclick="editarVeiculo('${v.id}')">Editar</button></div>
+      </div>`;
+      c.appendChild(d);
+    });
+  }
+
+  window.editarVeiculo = function(id){
+    // Encontrar index pelo ID do Firestore
+    const idx = userDB.findIndex(x=>x.id===id);
+    if(idx===-1){alert('Veículo não encontrado (pode ter sido removido).');return;}
+    editarIndex=idx;
+    let v=userDB[idx];
+    $("modalTitle").innerText="Editar veículo";
+    $("overlay").style.display="block";
+    $("modal").style.display="block";
+    $("addTipo").value=v.tipo;
+    preencherAddMarca();
+    $("addMarca").value=v.marca;
+    $("addModelo").value=v.modelo;
+    $("addSubmodelo").value=v.submodelo;
+    $("addAno").value=v.ano;
+    $("addLocal").value=v.local;
+    $("addPositivo").value=v.positivo;
+    $("addNegativo").value=v.negativo;
+    $("addPosChave").value=v.posChave;
+    $("addBloqueio").value=v.bloqueio;
+  }
+
+  // listeners de cascata na edição
+  $("editTipo").addEventListener('change', updateEditMarcaModelSub);
+  $("editMarca").addEventListener('change', updateEditModelSub);
+  $("editModelo").addEventListener('change', updateEditSub);
+
 </script>
 </body>
 </html>
