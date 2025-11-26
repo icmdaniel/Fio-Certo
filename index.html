@@ -7,8 +7,7 @@
 <style>
 :root{
   --bg:#f3f6fb; --card:#ffffff; --muted:#6b7280; --accent:#0ea5a3; --accent-darker:#0b8f8c;
-  --btn:#0369a1; --success:#10b981; --danger:#ef4444; --radius:12px; --glass: rgba(255,255,255,0.7);
-}
+  --btn:#0369a1; --success:#10b981; --danger:#ef4444; --radius:12px; --glass: rgba(255,255,255,0.7);}
 *{box-sizing:border-box}
 body{margin:0;font-family:Inter,Arial,sans-serif;background:linear-gradient(180deg,#e6eef7,var(--bg));color:#0f172a;}
 .container{max-width:980px;margin:28px auto;padding:20px;}
@@ -29,11 +28,180 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
 .btn-danger{background:var(--danger);color:white}
 .small{font-size:13px;color:var(--muted);}
 .resultTitle{font-weight:700;margin:0 0 6px 0}
-.resultBox{background:#07122a;color:#e6fffb;padding:14px;border-radius:10px;white-space:pre-wrap;font-family:monospace}
+
+/* --- Estilo para o Aviso de Limpeza --- */
+.info-alert {
+    margin-top: 20px;
+    padding: 12px;
+    background: #fffaeb; /* Amarelo muito claro */
+    border: 1px solid #fcd34d; /* Amarelo médio */
+    color: #b45309; /* Marrom escuro */
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+}
+/* NOVO ESTILO PARA O RESULTADO */
+.resultBox {
+    background: var(--card); 
+    padding: 18px; /* Aumentei um pouco o padding */
+    border-radius: var(--radius);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08); 
+    font-family: Inter, sans-serif; 
+    color: #0f172a; 
+    min-height: 250px; /* Garante que a caixa tenha um tamanho mínimo */
+}
+/* Novo estilo para cada item de fiação */
+.wire-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0; /* Aumentei o espaçamento */
+    border-bottom: 1px dashed #e2e8f0;
+}
+.wire-item:last-child {
+    border-bottom: none;
+}
+.wire-label {
+    font-size: 16px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+}
+.wire-value {
+    font-size: 16px;
+    font-weight: 700;
+    color: #0f172a; 
+}
+/* Cores de destaque */
+.positivo-val { color: #000000; font-size: 18px; font-weight: 700; } 
+.negativo-val { color: #000000; } 
+.poschave-val { color: #000000; } 
+.bloqueio-val { color: #000000; } 
+
+/* Título principal do Veículo/Local */
+.main-title-box {
+    background: #eff6ff;
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    font-size: 16px;
+    font-weight: 700;
+    color: #1e40af;
+}
+
+/* ESTILOS DO HISTÓRICO EXPANDIDO */
+.history-details {
+    display: none; /* Oculto por padrão */
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 12px;
+    margin-top: 8px;
+    font-size: 13px;
+    color: #334155;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.03);
+}
+.history-details p { margin: 4px 0; }
+.history-wire-group {
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #f1f5f9;
+}
+.history-wire-group:last-child { border-bottom: none; }
+
+/* Adicionado para comparação no histórico */
+.comparison-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-top: 10px;
+}
+.comparison-box {
+    border: 1px solid #e6eef7;
+    background: #fdfdfd;
+    padding: 10px;
+    border-radius: 8px;
+}
+.comparison-box h4 {
+    margin-top: 0;
+    margin-bottom: 8px;
+    font-size: 14px;
+    color: #4a5568;
+    border-bottom: 1px dashed #e2e8f0;
+    padding-bottom: 5px;
+}
+.changed-field {
+    color: #c52438; /* Cor para indicar mudança */
+    font-weight: 600;
+    background-color: #ffeaea;
+    padding: 1px 3px;
+    border-radius: 3px;
+}
+.history-install-item {
+    background: #f1f5f9;
+    padding: 6px;
+    border-radius: 6px;
+    margin-top: 4px;
+    font-size: 12px;
+    margin-bottom: 6px;
+}
+.history-install-item strong { color: #334155; }
+.history-install-item span { color: #64748b; }
+
+/* NOVO: Estilo para o box de filtros do histórico */
+#historicoModal > div:nth-child(3) {
+    background: #f1f5f9; 
+    padding: 12px; 
+    border-radius: 8px; 
+    margin-bottom: 15px;
+}
 
 /* MODAL & OVERLAY */
 #overlay{display:none;position:fixed;inset:0;background:rgba(2,6,23,0.45);z-index:60}
 #modal{display:none;position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:500px;max-width:94%;z-index:70;border-radius:12px;padding:18px;background:var(--card);box-shadow:0 20px 60px rgba(2,6,23,0.25);max-height:90vh;overflow:auto}
+
+/* Estilos para Modais de Senha/Auth/Histórico */
+#historicoPasswordModal, #modalAlterarSenha {
+    display: none; 
+    position: fixed; 
+    left: 50%; 
+    top: 50%; 
+    transform: translate(-50%,-50%); 
+    width: 350px; 
+    max-width: 94%; 
+    z-index: 80; 
+    border-radius: 12px; 
+    padding: 18px; 
+    background: var(--card); 
+    box-shadow: 0 20px 60px rgba(2,6,23,0.25); 
+}
+#historicoModalOverlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(2,6,23,0.45);
+    z-index: 60;
+}
+#historicoModal{
+    display:none;
+    position:fixed;
+    left:50%;
+    top:50%;
+    transform:translate(-50%,-50%);
+    width:700px;
+    max-width:94%;
+    z-index:70;
+    border-radius:12px;
+    padding:18px;
+    background:var(--card);
+    box-shadow:0 20px 60px rgba(2,6,23,0.25);
+    max-height:90vh;
+    overflow:auto
+}
+
+
 .modalHeader{display:flex;justify-content:space-between;align-items:center; margin-bottom: 10px;}
 .modalClose{background:transparent;border:none;color:var(--muted);font-weight:700;cursor:pointer}
 .note{font-size:13px;color:var(--muted);margin-top:6px}
@@ -63,6 +231,76 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
 .separator-box { margin: 15px 0; border-bottom: 1px solid #e6eef7; position: relative; text-align: center; }
 .separator-text { background: white; padding: 0 10px; color: #999; font-size: 12px; position: relative; top: 8px; }
 
+/* FOOTER NOTICE */
+.footer-notice {
+    max-width: 980px;
+    margin: 20px auto 30px auto;
+    padding: 15px;
+    text-align: center;
+    font-size: 14px;
+    color: var(--muted);
+    background: #e6eef7; /* Fundo azul/cinza claro */
+    border-radius: 10px;
+    border: 1px solid #c9dff7;
+}
+.footer-notice a {
+    color: var(--btn);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+/* NOVO: Estilo para o Dropdown Menu */
+.dropdown-menu-container {
+    position: relative;
+    display: inline-block;
+}
+.menu-toggle-btn {
+    /* Novo botão para abrir o menu */
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    background: #ffffff; /* Fundo branco ou neutro */
+    border: 1px solid #e6eef7;
+    color: var(--btn);
+}
+.dropdown-menu {
+    position: absolute;
+    top: 100%; /* Abaixo do botão */
+    right: 0;
+    background: var(--card);
+    border: 1px solid #e6eef7;
+    border-radius: var(--radius);
+    box-shadow: 0 8px 16px rgba(15,23,42,0.1);
+    min-width: 200px;
+    z-index: 100;
+    margin-top: 8px; /* Espaço entre o botão e o menu */
+    display: none; /* Oculto por padrão */
+    padding: 8px 0;
+}
+.dropdown-menu button {
+    display: block;
+    width: 100%;
+    padding: 10px 15px;
+    text-align: left;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    color: #334155;
+    font-size: 14px;
+}
+.dropdown-menu button:hover {
+    background: #f1f5f9;
+}
+.dropdown-menu .separator {
+    height: 1px;
+    background: #e6eef7;
+    margin: 8px 0;
+}
+
+
 @media (max-width:900px){.grid{grid-template-columns:1fr; }.title h1{font-size:18px}}
 </style>
 </head>
@@ -77,12 +315,33 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
       <div class="logo">FC</div>
       <div>
         <h1>Fio Certo</h1>
-        <div class="subtitle">Padrões de cores e locais para instalação (Online)</div>
+        <div class="subtitle">Padrões de cores e locais para instalação de rastreadores (Online)</div>
       </div>
     </div>
-    <div>
-      <button class="btn btn-primary" onclick="abrirCadastro()">Cadastrar</button>
-      <button class="btn btn-sec" onclick="abrirEditar()">Editar Veículos</button>
+    <div style="display:flex; gap: 12px; align-items: center;">
+      
+      <button class="btn btn-primary" id="loginRegisterButton" onclick="abrirModalAuth()">Login / Cadastrar</button>
+      
+      <div class="dropdown-menu-container" id="menuDropdownContainer" style="display:none;">
+          
+          <button class="menu-toggle-btn" onclick="toggleMenu()">Menu ▼</button>
+          
+          <div class="dropdown-menu" id="userMenuDropdown">
+              <button id="btnCadastrarVeiculoMenu" onclick="abrirCadastro(); toggleMenu();">➕ Cadastrar Veículo/Rastreador</button>
+              
+              <button id="editButtonMenu" onclick="abrirEditar(); toggleMenu();">📝 Editar Veículo/Rastreador</button>
+              
+              <button id="historicoButtonMenu" onclick="abrirHistorico(); toggleMenu();">⏳ Histórico de alterações</button>
+              
+              <div class="separator"></div>
+
+              <button id="alterarSenhaButtonMenu" onclick="abrirModalAlterarSenha(); toggleMenu();">🔑 Alterar Senha</button>
+              
+              <button id="logoutButtonMenu" onclick="fazerLogout(); toggleMenu();">🚪 Logout</button>
+              
+          </div>
+      </div>
+      
     </div>
   </div>
 
@@ -99,7 +358,7 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
           <span class="separator-text">OU FILTRE ABAIXO</span>
       </div>
 
-      <label>Tipo do veículo</label>
+      <label>Tipo do veículo ou rastreador</label>
       <select id="tipoSelect">
         <option value="">-- selecione --</option>
         <option value="carro">Carro</option>
@@ -132,6 +391,11 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
         <button class="btn btn-primary" onclick="buscar()">Buscar</button>
         <button class="btn btn-sec" onclick="resetBusca()">Limpar</button>
       </div>
+      
+      <div class="info-alert">
+          💡  Aviso: Sempre que for fazer uma nova busca ou usar o filtro, aperte no botão "Limpar".
+      </div>
+      
     </div>
 
     <div class="card">
@@ -143,7 +407,7 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
         </select>
       </div>
 
-      <div id="resultado" class="resultBox" style="font-family:Verdana;font-size:20px;">Carregando sistema...</div>
+      <div id="resultado" class="resultBox">Sistema pronto. Faça sua busca.</div>
       
       <div id="btnEditarResultado" style="margin-top:10px;text-align:right;display:none">
          </div>
@@ -156,7 +420,7 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
         <button class="btn btn-sec" onclick="voltarBusca()">Voltar à Busca</button>
       </div>
       
-      <h3>Gerenciar Veículos</h3>
+      <h3>Gerenciar Veículos e Rastreadores</h3>
 
       <label style="color:var(--accent-darker); font-weight:700">🔍 Busca Rápida (Lista)</label>
       <input id="editSearchInput" placeholder="Digite ex: Honda Civic 2020..." onkeyup="filtrarEdicao()">
@@ -198,17 +462,21 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
     </div>
   </div>
 
+</div> <div class="footer-notice">
+    Para o cadastro e edição dos veículos ou rastreadores, entre em contato com o email: 
+    <a href="mailto:fiocertorastreadores@gmail.com">fiocertorastreadores@gmail.com</a>
 </div>
 
 <div id="overlay"></div>
+
 <div id="modal">
   <div class="modalHeader">
     <strong id="modalTitle">Cadastrar veículo</strong>
     <button class="modalClose" onclick="fecharModal()">X</button>
   </div>
-  <p class="note">Preencha os dados do veículo e adicione as opções de instalação.</p>
+  <p class="note">Preencha os dados do veículo ou rastreador e adicione as opções de instalação.</p>
 
-  <div class="section-title">1. Dados do Veículo</div>
+  <div class="section-title">1. Dados do Veículo ou Rastreador</div>
   <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 0;">
       <div>
         <label>Tipo</label>
@@ -242,7 +510,7 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
 
       <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 0;">
         <div><label>Positivo</label><input id="addPositivo"></div>
-        <div><label>Negativo</label><input id="addNegativo"></div>
+        <div><div><label>Negativo</label><input id="addNegativo"></div></div>
       </div>
       <div class="grid" id="posChaveBloqueioGrid" style="grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 0;">
         <div><label>Pós-chave</label><input id="addPosChave"></div>
@@ -267,14 +535,111 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
 
   <div class="row" style="justify-content:flex-end;margin-top:14px; border-top: 2px solid #ddd; padding-top:10px;">
     <button class="btn btn-sec" onclick="fecharModal()">Cancelar</button>
-    <button class="btn btn-green" id="btnSalvar">Salvar Veículo Completo</button>
+    <button class="btn btn-green" id="btnSalvar">Salvar Veículo ou Rastreador Completo</button>
   </div>
 </div>
+<div id="historicoPasswordModal">
+    <div class="modalHeader">
+      <strong>Acesso Restrito ao Histórico</strong>
+      <button class="modalClose" onclick="fecharHistoricoPasswordModal()">X</button>
+    </div>
+    <p class="note">Insira o código secreto para visualizar o Histórico de alterações.</p>
+    
+    <label>Código Secreto</label>
+    <input id="historicoSenhaInput" type="password" placeholder="Seu código secreto (Não é a senha de login)">
+    
+    <button class="btn btn-primary" style="width:100%; margin-top:20px;" onclick="verificarSenhaHistorico()">Acessar Histórico</button>
+</div>
+<div id="modalAlterarSenha">
+  <div class="modalHeader">
+    <strong>Alterar Senha de Login</strong>
+    <button class="modalClose" onclick="fecharModalAlterarSenha()">X</button>
+  </div>
+  <p class="note">Mude sua senha de **Login** no sistema.</p>
+  
+  <label>Senha Atual</label>
+  <input id="currentPasswordInput" type="password" placeholder="Sua senha atual">
 
+  <label style="margin-top:15px;">Nova Senha</label>
+  <input id="newPasswordInput" type="password" placeholder="Mínimo 6 caracteres">
+  
+  <button class="btn btn-primary" style="width:100%; margin-top:20px;" onclick="alterarSenha()">Confirmar Alteração</button>
+</div>
+<div id="historicoModalOverlay"></div>
+<div id="historicoModal">
+  <div class="modalHeader">
+    <strong>Histórico de Ações</strong>
+    <button class="modalClose" onclick="fecharHistoricoModal()">X</button>
+  </div>
+  <p class="note">Registro de cadastros, edições e exclusões no banco de dados. Filtros aplicados sobre todos os itens carregados.</p>
+  
+  <div style="background: #f1f5f9; padding: 12px; border-radius: 8px; margin-bottom: 15px;">
+    <label style="color:var(--accent-darker); font-weight:700">🔍 Buscar por Veículo/Detalhe</label>
+    <input id="historySearchInput" placeholder="Ex: Uno Way 2020 ou fio amarelo" onkeyup="filtrarHistorico()">
+
+    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap:10px; margin-top:10px">
+      <div>
+        <label>Tipo de Ação</label>
+        <select id="historyTipoSelect" onchange="filtrarHistorico()" style="margin-top:0">
+          <option value="">-- todos --</option>
+          <option value="CADASTRO">Cadastro</option>
+          <option value="EDICAO">Edição</option>
+          <option value="EXCLUSAO">Exclusão</option>
+        </select>
+      </div>
+      <div>
+        <label>Usuário</label>
+        <select id="historyUserSelect" onchange="filtrarHistorico()" style="margin-top:0">
+          <option value="">-- todos --</option>
+        </select>
+      </div>
+      
+      <div>
+        <label>Data (A partir de)</label>
+        <input id="historyDateStart" type="date" onchange="filtrarHistorico()" style="margin-top:0">
+      </div>
+      <div>
+        <label>Data (Até)</label>
+        <input id="historyDateEnd" type="date" onchange="filtrarHistorico()" style="margin-top:0">
+      </div>
+      
+    </div>
+  </div>
+  <div id="historicoLista">Carregando histórico...</div>
+  
+  <div style="text-align:center; margin-top: 15px;">
+    <button class="btn btn-sec" id="btnCarregarMaisHistorico" onclick="fetchHistoryBatch(false)" style="display:none; width: 100%;">Carregar Mais 50 Registros Antigos</button>
+  </div>
+  <p id="historyEndMessage" class="small" style="text-align:center; margin-top: 10px; color:var(--success); display:none;">Fim do Histórico Carregado</p>
+
+</div>
+<div id="modalAuth" style="display:none; position:fixed; left:50%; top:50%; transform:translate(-50%,-50%); width:350px; max-width:94%; z-index:80; border-radius:12px; padding:18px; background:var(--card); box-shadow:0 20px 60px rgba(2,6,23,0.25); max-height:90vh; overflow:auto">
+  <div class="modalHeader">
+    <strong id="authModalTitle">Login / Cadastro</strong>
+    <button class="modalClose" onclick="fecharModalAuth()">X</button>
+  </div>
+  
+  <label>Email</label>
+  <input id="authEmail" type="email" placeholder="seu.email@exemplo.com">
+
+  <label>Senha</label>
+  <input id="authSenha" type="password" placeholder="Mínimo 6 caracteres">
+  
+  <label style="margin-top:15px; color:var(--danger)">Código de Cadastro (Obrigatório para Criar Conta)</label>
+  <input id="authCode" type="text" placeholder="Solicite o código secreto">
+
+  <div class="row" style="margin-top:20px; justify-content:space-between">
+    <button class="btn btn-primary" id="btnLogin" onclick="handleLogin()">Login</button>
+    <button class="btn btn-sec" id="btnRegister" onclick="handleRegister()">Cadastrar</button>
+  </div>
+</div>
 <script type="module">
   /* ================= FIREBASE SETUP ================= */
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
-  import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+  // CORREÇÃO ESSENCIAL: Adicionando importação de initializeApp
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js"; 
+  // IMPORT ATUALIZADO: Adicionando 'startAfter' para paginação
+  import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, orderBy, limit, startAfter } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+  import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, EmailAuthProvider, reauthenticateWithCredential, updatePassword } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyB097Hr3Vg55djiCjW8A3m_vhK4Jen-Xlw",
@@ -289,13 +654,31 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
   const app = initializeApp(firebaseConfig);
   const dbFirestore = getFirestore(app);
   const veiculosCollection = collection(dbFirestore, "veiculos");
+  const historicoAcoesCollection = collection(dbFirestore, "historico_acoes"); 
+  const auth = getAuth(app);
 
-  /* ================= VARIÁVEIS GLOBAIS ================= */
+  /* ================= VARIÁVEIS GLOBAIS E CONFIGURAÇÃO DE SENHA SECRETA ================= */
   let userDB = []; 
+  let loggedInUser = null; 
   let db = [];
   let editarIndex = null;
+  let oldVehicleData = null; 
   let tempInstalacoes = [];
   let currentVehicleResult = null;
+  let historyData = []; // Armazena o histórico completo carregado (agora com paginação)
+
+  // NOVO: Variáveis de controle para Paginação do Histórico
+  const HISTORY_BATCH_SIZE = 50; 
+  let lastVisibleHistoryDoc = null; 
+  let hasMoreHistory = true; 
+  let isLoadingHistory = false; // Para evitar múltiplos cliques de "Carregar Mais"
+
+  
+  // =========================================================================
+  // !!! ATENÇÃO: SENHA SECRETA DO HISTÓRICO !!!
+  // Mude este valor para o código que só você saberá.
+  const HISTORY_SECRET_CODE = "112512"; 
+  // =========================================================================
 
   const marcas = {
     carro:["Fiat","Volkswagen","Chevrolet","Toyota","Ford","Renault","Peugeot","Citroën","Honda","Hyundai","Land Rover","Ram","BYD"],
@@ -327,6 +710,603 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
           setTimeout(() => toast.remove(), 300);
       }, 3500);
   };
+  
+  /* ================= MODAL AUTH FUNCTIONS ================= */
+  
+  window.abrirModalAuth = function() {
+    $("overlay").style.display = "block";
+    $("modalAuth").style.display = "block";
+  };
+
+  window.fecharModalAuth = function() {
+    $("overlay").style.display = "none";
+    $("modalAuth").style.display = "none";
+    $("authEmail").value = "";
+    $("authSenha").value = "";
+    $("authCode").value = ""; 
+  };
+
+  /* ================= FIREBASE AUTH FUNCTIONS ================= */
+  
+  const SECRET_CODE = "fiocerto2025"; 
+
+  window.handleRegister = function() {
+    const email = $("authEmail").value;
+    const senha = $("authSenha").value;
+    const code = $("authCode").value.trim(); 
+
+    if (code !== SECRET_CODE) {
+        showNotification('Código de Cadastro incorreto. Solicite o código.', 'error');
+        return;
+    }
+
+    createUserWithEmailAndPassword(auth, email, senha)
+        .then(() => {
+            showNotification('Cadastro realizado e Login efetuado!', 'success');
+            fecharModalAuth();
+        })
+        .catch((error) => {
+            console.error(error);
+            showNotification('Erro no cadastro: ' + error.message.replace("Firebase: ", ""), 'error');
+        });
+  };
+
+  window.handleLogin = function() {
+    const email = $("authEmail").value;
+    const senha = $("authSenha").value;
+    signInWithEmailAndPassword(auth, email, senha)
+        .then(() => {
+            showNotification('Login realizado com sucesso!', 'success');
+            fecharModalAuth();
+        })
+        .catch((error) => {
+            console.error(error);
+            showNotification('Erro no login: ' + error.message.replace("Firebase: ", ""), 'error');
+        });
+  };
+
+  window.fazerLogout = function() {
+      signOut(auth)
+          .then(() => {
+              showNotification('Sessão encerrada.', 'info');
+          })
+          .catch((error) => {
+              showNotification('Erro ao fazer logout.', 'error');
+          });
+  };
+
+  /* ================= DROPDOWN MENU LOGIC (NOVO) ================= */
+  
+  window.toggleMenu = function() {
+    const dropdown = $("userMenuDropdown");
+    dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
+  };
+  
+  // Fecha o menu se o usuário clicar fora dele
+  document.addEventListener('click', (event) => {
+      const dropdownContainer = $("menuDropdownContainer");
+      const dropdown = $("userMenuDropdown");
+
+      if (dropdownContainer && !dropdownContainer.contains(event.target)) {
+          if (dropdown && dropdown.style.display === "block") {
+              dropdown.style.display = "none";
+          }
+      }
+  });
+
+
+  function updateUIAuth(user) {
+      const loginRegisterBtn = $("loginRegisterButton");
+      const menuDropdownContainer = $("menuDropdownContainer"); 
+
+      if (user) {
+          loginRegisterBtn.style.display = "none";
+          menuDropdownContainer.style.display = "inline-block"; // Mostra o menu de ações
+          const dropdown = $("userMenuDropdown");
+          if (dropdown) dropdown.style.display = "none"; // Garante que o menu esteja fechado
+      } else {
+          loginRegisterBtn.style.display = "inline-block";
+          menuDropdownContainer.style.display = "none"; // Esconde o menu de ações
+          voltarBusca(); 
+      }
+  }
+  
+  /* ================= ALTERAR SENHA FIREBASE (LOGIN) ================= */
+  window.abrirModalAlterarSenha = function() {
+      if (!loggedInUser) {
+         showNotification("Faça login para alterar a senha.", "error");
+         return;
+      }
+      $("historicoModalOverlay").style.display = "block"; 
+      $("modalAlterarSenha").style.display = "block";
+      $("currentPasswordInput").value = "";
+      $("newPasswordInput").value = "";
+      $("currentPasswordInput").focus();
+  };
+  
+  window.fecharModalAlterarSenha = function() {
+      $("historicoModalOverlay").style.display = "none";
+      $("modalAlterarSenha").style.display = "none";
+  };
+  
+  window.alterarSenha = async function() {
+      const senhaAtual = $("currentPasswordInput").value;
+      const novaSenha = $("newPasswordInput").value;
+      
+      if (!senhaAtual || !novaSenha) {
+          showNotification("Preencha todos os campos.", "error");
+          return;
+      }
+      
+      if (novaSenha.length < 6) {
+          showNotification("A nova senha deve ter no mínimo 6 caracteres.", "error");
+          return;
+      }
+      
+      if (senhaAtual === novaSenha) {
+          showNotification("A nova senha deve ser diferente da atual.", "error");
+          return;
+      }
+      
+      const btn = document.querySelector("#modalAlterarSenha .btn-primary");
+      btn.innerText = "Verificando...";
+      btn.disabled = true;
+
+      try {
+          const credential = EmailAuthProvider.credential(loggedInUser.email, senhaAtual);
+          
+          await reauthenticateWithCredential(loggedInUser, credential);
+          await updatePassword(loggedInUser, novaSenha);
+          
+          showNotification("Sua senha de login foi alterada com sucesso!", "success");
+          fecharModalAlterarSenha();
+          fazerLogout(); 
+          
+      } catch (error) {
+          console.error("Erro ao alterar senha:", error);
+          if (error.code === 'auth/wrong-password') {
+               showNotification("Senha atual incorreta.", "error");
+          } else if (error.code === 'auth/requires-recent-login') {
+               showNotification("Por segurança, faça login novamente e tente a alteração.", "error");
+          } else {
+               showNotification("Erro ao alterar senha. Verifique os dados.", "error");
+          }
+      } finally {
+          btn.innerText = "Confirmar Alteração";
+          btn.disabled = false;
+      }
+  };
+
+
+  /* ================= HISTÓRICO DE AÇÕES - CONTROLE DE ACESSO (SENHA SECRETA) ================= */
+  
+  window.abrirHistorico = function() {
+      if (!loggedInUser) {
+         showNotification("Faça login para ver o histórico.", "error");
+         return;
+      }
+      $("historicoPasswordModal").style.display = "block";
+      $("historicoModalOverlay").style.display = "block";
+      $("historicoSenhaInput").value = "";
+      $("historicoSenhaInput").focus();
+  };
+  
+  window.fecharHistoricoPasswordModal = function() {
+      $("historicoPasswordModal").style.display = "none";
+      $("historicoModalOverlay").style.display = "none";
+  };
+  
+  window.fecharHistoricoModal = function() {
+      $("historicoModalOverlay").style.display = "none";
+      $("historicoModal").style.display = "none";
+      historyData = []; 
+      lastVisibleHistoryDoc = null; 
+      hasMoreHistory = true; 
+      // Limpa os filtros
+      $("historySearchInput").value = "";
+      $("historyTipoSelect").value = "";
+      $("historyUserSelect").value = "";
+      $("historyDateStart").value = "";
+      $("historyDateEnd").value = ""; 
+  };
+
+  
+  window.verificarSenhaHistorico = async function() {
+      const senhaDigitada = $("historicoSenhaInput").value.trim();
+      
+      if (!senhaDigitada) {
+          showNotification("O código secreto é obrigatório.", "error");
+          return;
+      }
+      
+      // *** VERIFICAÇÃO DO CÓDIGO SECRETO FIXO ***
+      if (senhaDigitada === HISTORY_SECRET_CODE) { 
+          fecharHistoricoPasswordModal();
+          $("historicoModalOverlay").style.display = "block";
+          $("historicoModal").style.display = "block";
+          await carregarHistorico();
+      } else {
+          showNotification("Código secreto incorreto. Acesso negado.", "error");
+      }
+  };
+
+
+  // Salva o objeto DADOS completo e DADOS ANTIGOS (se for edição)
+  async function registrarAcao(tipo, dados, dadosAntigos = null) {
+      if (!loggedInUser) return; 
+
+      try {
+          const acao = {
+              tipo: tipo, // CADASTRO, EDICAO, EXCLUSAO
+              dados_completos: dados, 
+              dados_antigos: dadosAntigos, // NOVO: Para comparação na edição
+              
+              veiculo_marca: dados.marca,
+              veiculo_modelo: dados.modelo,
+              veiculo_ano: dados.ano,
+              
+              usuario: loggedInUser.email, 
+              data: new Date().toISOString()
+          };
+          await addDoc(historicoAcoesCollection, acao);
+      } catch (e) {
+          console.error("Erro ao registrar ação no histórico: ", e);
+      }
+  }
+
+  window.toggleHistoryDetails = function(id) {
+      const detailsDiv = document.getElementById('details-' + id);
+      if (detailsDiv.style.display === 'none') {
+          detailsDiv.style.display = 'block';
+      } else {
+          detailsDiv.style.display = 'none';
+      }
+  };
+
+  // Helper para formatar os detalhes de instalação (blocos)
+  function renderInstalacoes(instalacoes, isNew, oldInstalacoes = []) {
+      if (!instalacoes || instalacoes.length === 0) return '<div>Nenhuma instalação cadastrada.</div>';
+      
+      let html = '';
+      instalacoes.forEach((inst, idx) => {
+          let changeFlag = '';
+          
+          if (isNew) {
+              const oldInst = oldInstalacoes.find(o => 
+                  o.nomeLocal === inst.nomeLocal && 
+                  o.localDetalhe === inst.localDetalhe && 
+                  o.positivo === inst.positivo &&
+                  o.negativo === inst.negativo &&
+                  o.posChave === inst.posChave &&
+                  o.bloqueio === inst.bloqueio
+              );
+              if (!oldInst) changeFlag = ' **(NOVA)**';
+          }
+
+          const details = inst.localDetalhe || "Sem detalhes";
+          let title = inst.nomeLocal;
+
+          // Monta o item de instalação
+          html += `
+          <div class="history-install-item">
+              <strong>${title}</strong>${changeFlag}<br>
+              <span style="display:block;">Pos: ${inst.positivo || '-'} | Neg: ${inst.negativo || '-'} | Pós-Chave: ${inst.posChave || '-'} | Bloqueio: ${inst.bloqueio || '-'}</span>
+              ${inst.saida2 ? `<span style="display:block;">S2: ${inst.saida2 || '-'} | E1: ${inst.entrada1 || '-'} | E2: ${inst.entrada2 || '-'}</span>` : ''}
+              ${details !== "Sem detalhes" && !inst.saida2 ? `<i>Detalhe: ${details}</i>` : ''}
+          </div>`;
+      });
+      return html;
+  }
+
+  // Helper para renderizar dados em um único bloco (CADASTRO ou EXCLUSAO)
+  function renderSingleDetails(dados, tipo) {
+      const isRastreador = dados.tipo === 'rastreador';
+      const labelSubmodelo = isRastreador ? "Modelo Rastreador" : "Submodelo";
+      
+      // Para rastreador, o submodelo/modelo rastreador fica no nomeLocal da primeira instalação
+      const valueSubmodelo = isRastreador ? dados.instalacoes?.[0]?.nomeLocal : dados.submodelo;
+
+      let html = `<div style='margin-top:5px;'>`;
+      html += `<b>Tipo:</b> ${dados.tipo || '-'}<br>`;
+      html += `<b>Marca:</b> ${dados.marca || '-'}<br>`;
+      html += `<b>Modelo:</b> ${dados.modelo || '-'}<br>`;
+      html += `<b>${labelSubmodelo}:</b> ${valueSubmodelo || '-'}<br>`;
+      html += `<b>Ano:</b> ${dados.ano || '-'}<br>`;
+      html += `<div style='margin-top:8px;'><b>Instalações (${dados.instalacoes?.length || 0}):</b></div>`;
+      html += renderInstalacoes(dados.instalacoes, false); 
+      html += `</div>`;
+      return html;
+  }
+  
+  // Helper para renderizar a comparação (EDICAO)
+  function renderComparisonDetails(antigo, novo) {
+      const fields = ['tipo', 'marca', 'modelo', 'submodelo', 'ano'];
+      const isRastreador = novo.tipo === 'rastreador';
+      const labelSubmodelo = isRastreador ? "Modelo Rastreador" : "Submodelo";
+
+      const getVal = (data, field) => {
+          // Se for Rastreador, o "submodelo" é o nomeLocal da primeira instalação
+          if (field === 'submodelo' && isRastreador) {
+              return data.instalacoes?.[0]?.nomeLocal || '-';
+          }
+          return data[field] || '-';
+      };
+
+      let htmlAntigo = '<h4><span style="color:var(--danger)">Antes</span> da Edição</h4>';
+      let htmlNovo = '<h4><span style="color:var(--success)">Depois</span> da Edição</h4>';
+
+      // Comparação dos campos básicos
+      fields.forEach(field => {
+          const label = field === 'submodelo' ? labelSubmodelo : field.charAt(0).toUpperCase() + field.slice(1);
+          const valAntigo = getVal(antigo, field);
+          const valNovo = getVal(novo, field);
+          const changed = valAntigo !== valNovo;
+
+          const spanAntigo = changed ? `<span class="changed-field">${valAntigo}</span>` : valAntigo;
+          const spanNovo = changed ? `<span class="changed-field">${valNovo}</span>` : valNovo;
+
+          htmlAntigo += `<p><b>${label}:</b> ${spanAntigo}</p>`;
+          htmlNovo += `<p><b>${label}:</b> ${spanNovo}</p>`;
+      });
+
+      // Comparação das Instalações (Aqui é mais complexo, apenas listamos os blocos)
+      htmlAntigo += `<div style='margin-top:10px;'><b>Instalações (${antigo.instalacoes?.length || 0}):</b></div>`;
+      htmlAntigo += renderInstalacoes(antigo.instalacoes, false);
+
+      htmlNovo += `<div style='margin-top:10px;'><b>Instalações (${novo.instalacoes?.length || 0}):</b></div>`;
+      // Passamos as instalações antigas para a nova função para ela destacar as NOVAS (se for o caso)
+      htmlNovo += renderInstalacoes(novo.instalacoes, true, antigo.instalacoes);
+
+
+      return `
+          <div class="comparison-container">
+              <div class="comparison-box">${htmlAntigo}</div>
+              <div class="comparison-box">${htmlNovo}</div>
+          </div>
+      `;
+  }
+
+  // Função principal para formatar os detalhes do Histórico
+  function formatarDetalhesHtml(acao) {
+      const dados = acao.dados_completos;
+      const dadosAntigos = acao.dados_antigos; 
+      
+      if (!dados) return "Sem detalhes salvos.";
+
+      if (acao.tipo === 'EDICAO' && dadosAntigos) {
+          return renderComparisonDetails(dadosAntigos, dados);
+      }
+      
+      // Para CADASTRO e EXCLUSAO, mostramos os detalhes em um bloco único
+      return renderSingleDetails(dados, acao.tipo);
+  }
+
+  // Renderiza a lista de histórico (usada após carregar ou filtrar)
+  function renderHistoricoLista(data) {
+      const listaDiv = $("historicoLista");
+      listaDiv.innerHTML = "";
+      
+      if (data.length === 0) {
+          listaDiv.innerHTML = '<p style="text-align:center; color:var(--muted);">Nenhuma ação encontrada com os filtros atuais.</p>';
+          return;
+      }
+      
+      let html = data.map((acao) => {
+          const dataFormatada = new Date(acao.data).toLocaleString('pt-BR');
+          const tipo = acao.tipo;
+          const dadosVeiculo = acao.dados_completos || { marca: acao.veiculo_marca, modelo: acao.veiculo_modelo, ano: acao.veiculo_ano };
+          
+          let cor = '#0f172a';
+          if (tipo === 'CADASTRO') cor = 'var(--success)';
+          if (tipo === 'EDICAO') cor = 'var(--btn)';
+          if (tipo === 'EXCLUSAO') cor = 'var(--danger)';
+          
+          const veiculoInfo = `${dadosVeiculo.marca} ${dadosVeiculo.modelo} (${dadosVeiculo.ano})`;
+          
+          return `
+              <div style="border:1px solid #e2e8f0; padding:10px; border-radius:8px; margin-bottom:8px; background: #f8fafc;">
+                  <div style="display:flex; justify-content:space-between; align-items:center;">
+                      <div>
+                          <strong style="color:${cor}; font-size:14px;">${tipo}</strong> | 
+                          <span style="font-size:14px; font-weight:600;">${veiculoInfo}</span><br>
+                          <span style="font-size:12px; color:var(--muted);">Por: ${acao.usuario} em ${dataFormatada}</span>
+                      </div>
+                      <button class="btn btn-sec" style="padding:4px 8px; font-size:12px;" onclick="toggleHistoryDetails('${acao.id}')">👁️ Detalhes</button>
+                  </div>
+                  
+                  <div id="details-${acao.id}" class="history-details">
+                      ${formatarDetalhesHtml(acao)}
+                  </div>
+              </div>
+          `;
+      }).join('');
+      
+      listaDiv.innerHTML = html;
+  }
+
+  // Aplica os filtros locais
+  window.filtrarHistorico = function() {
+      const termo = $("historySearchInput").value.toLowerCase().trim();
+      const tipo = $("historyTipoSelect").value;
+      const usuario = $("historyUserSelect").value;
+      
+      const dataInicio = $("historyDateStart").value; 
+      const dataFim = $("historyDateEnd").value; 
+
+      let dataInicioMs = 0;
+      let dataFimMs = Infinity; 
+
+      if (dataInicio) {
+          // Cria um objeto Date para o início do dia da data selecionada (para comparação)
+          const [year, month, day] = dataInicio.split('-');
+          dataInicioMs = new Date(year, month - 1, day).getTime();
+      }
+      
+      if (dataFim) {
+          // Cria um objeto Date para o FINAL do dia da data selecionada (para comparação)
+          const [year, month, day] = dataFim.split('-');
+          // Adiciona 24 horas - 1 milissegundo para pegar até o final do dia selecionado
+          const dataFimObj = new Date(year, month - 1, day);
+          dataFimMs = dataFimObj.getTime() + (24 * 60 * 60 * 1000) - 1; 
+      }
+
+      const filteredData = historyData.filter(acao => {
+          // 1. Filtro por Tipo de Ação
+          const matchTipo = !tipo || acao.tipo === tipo;
+
+          // 2. Filtro por Usuário
+          const matchUsuario = !usuario || acao.usuario === usuario;
+
+          // 3. Filtro por Data (INTERVALO)
+          const acaoDateMs = new Date(acao.data).getTime(); 
+          
+          const matchDataInicio = !dataInicio || acaoDateMs >= dataInicioMs;
+          const matchDataFim = !dataFim || acaoDateMs <= dataFimMs;
+          
+          const matchData = matchDataInicio && matchDataFim;
+
+
+          // 4. Filtro por Texto (Veículo ou Detalhe do Fio)
+          const veiculoInfo = `${acao.veiculo_marca} ${acao.veiculo_modelo} ${acao.veiculo_ano} ${acao.dados_completos?.submodelo || ''}`.toLowerCase();
+          
+          let fiaçãoInfo = '';
+          if (acao.dados_completos?.instalacoes) {
+              fiaçãoInfo = acao.dados_completos.instalacoes.map(inst => 
+                  `${inst.nomeLocal} ${inst.localDetalhe} ${inst.positivo} ${inst.negativo} ${inst.posChave} ${inst.bloqueio} ${inst.saida2 || ''} ${inst.entrada1 || ''} ${inst.entrada2 || ''}`
+              ).join(' ').toLowerCase();
+          }
+
+          const fullSearchString = veiculoInfo + fiaçãoInfo;
+          // Usa 'split(" ").every' para busca mais inteligente (todos os termos devem estar presentes)
+          const matchTermo = !termo || termo.split(" ").every(t => fullSearchString.includes(t)); 
+
+          return matchTipo && matchUsuario && matchData && matchTermo;
+      });
+
+      renderHistoricoLista(filteredData);
+  }
+
+
+  // NOVO: Função para buscar o histórico em lotes (paginação)
+  window.fetchHistoryBatch = async function(isInitialLoad = false) {
+    if (isLoadingHistory || (!hasMoreHistory && !isInitialLoad)) return;
+    
+    isLoadingHistory = true;
+    const btn = $("btnCarregarMaisHistorico");
+    const listaDiv = $("historicoLista");
+    const historyEndMessage = $("historyEndMessage");
+    
+    historyEndMessage.style.display = "none";
+    btn.innerText = isInitialLoad ? "Carregando..." : "Carregando mais...";
+    btn.disabled = true;
+    btn.style.display = "block"; 
+
+    try {
+        let q;
+        if (lastVisibleHistoryDoc) {
+            // Se houver um último documento visível, busca a próxima página
+            q = query(historicoAcoesCollection, 
+                orderBy("data", "desc"), 
+                startAfter(lastVisibleHistoryDoc), 
+                limit(HISTORY_BATCH_SIZE));
+        } else {
+            // Primeira busca
+            q = query(historicoAcoesCollection, 
+                orderBy("data", "desc"), 
+                limit(HISTORY_BATCH_SIZE));
+        }
+        
+        const querySnapshot = await getDocs(q);
+        const fetchedBatch = [];
+        const uniqueUsers = new Set(); 
+        
+        querySnapshot.docs.forEach((doc, index) => {
+            const acao = { id: doc.id, ...doc.data() };
+            fetchedBatch.push(acao);
+            historyData.push(acao); 
+            uniqueUsers.add(acao.usuario);
+            
+            // O último documento do lote é o ponto de partida para a próxima busca
+            if (index === querySnapshot.docs.length - 1) {
+                lastVisibleHistoryDoc = doc; 
+            }
+        });
+
+        // 1. Verifica se há mais registros
+        if (fetchedBatch.length < HISTORY_BATCH_SIZE) {
+            hasMoreHistory = false;
+        }
+
+        // 2. Atualiza os filtros de usuário
+        const userSelect = $("historyUserSelect");
+        // Cria um Set de todos os usuários já carregados para evitar duplicatas no select
+        const currentUsers = new Set(Array.from(userSelect.options).map(opt => opt.value).filter(v => v));
+        
+        historyData.forEach(acao => uniqueUsers.add(acao.usuario)); // Adiciona todos os usuários do histórico
+        
+        Array.from(uniqueUsers).sort().forEach(user => {
+            if (!currentUsers.has(user)) {
+                let opt = document.createElement("option");
+                opt.value = user;
+                opt.text = user;
+                userSelect.appendChild(opt);
+            }
+        });
+        
+        // 3. Se for a carga inicial e não houver dados, mostra mensagem
+        if (isInitialLoad && historyData.length === 0) {
+            listaDiv.innerHTML = '<p style="text-align:center; color:var(--muted);">Nenhuma ação registrada ainda.</p>';
+        }
+
+        // 4. Renderiza o histórico (que agora tem o lote antigo + o novo)
+        filtrarHistorico(); 
+        
+        // 5. Atualiza o estado do botão
+        if (hasMoreHistory) {
+            btn.innerText = `Carregar Mais ${HISTORY_BATCH_SIZE} Registros Antigos`;
+            btn.disabled = false;
+        } else {
+            btn.style.display = "none";
+            historyEndMessage.style.display = "block";
+        }
+        
+        if (historyData.length === 0) {
+             btn.style.display = "none";
+        }
+
+    } catch (e) {
+        console.error("Erro ao carregar lote do histórico: ", e);
+        showNotification("Erro ao carregar histórico. Tente novamente.", "error");
+        if (isInitialLoad) {
+             listaDiv.innerHTML = "<p style='color:var(--danger);'>Erro ao carregar histórico.</p>";
+        }
+        btn.innerText = "Erro ao Carregar. Clique para tentar.";
+        btn.disabled = false;
+    } finally {
+        isLoadingHistory = false;
+    }
+}
+
+
+  async function carregarHistorico() {
+      const listaDiv = $("historicoLista");
+      listaDiv.innerHTML = "Carregando histórico...";
+      
+      // Limpa estado para nova busca completa
+      historyData = [];
+      lastVisibleHistoryDoc = null; 
+      hasMoreHistory = true; 
+      
+      // Limpa os filtros
+      $("historySearchInput").value = "";
+      $("historyTipoSelect").value = "";
+      $("historyUserSelect").innerHTML = '<option value="">-- todos --</option>'; // Limpa e adiciona o padrão
+      $("historyDateStart").value = "";
+      $("historyDateEnd").value = ""; 
+      
+      // Chamada para a nova função de fetch em lote (carga inicial)
+      await fetchHistoryBatch(true);
+  }
 
   /* ================= CARREGAMENTO INICIAL ================= */
   async function carregarDadosDoFirebase() {
@@ -340,7 +1320,7 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
       db = [...userDB]; 
       $("resultado").innerText = "Sistema pronto. Faça sua busca.";
       if($("editarAba").style.display === "block") {
-          popularFiltrosEdicao(db); // Chama a função correta
+          popularFiltrosEdicao(db); 
           renderLista();
       }
     } catch (e) {
@@ -349,22 +1329,34 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
       showNotification("Erro de conexão com o servidor", "error");
     }
   }
-  carregarDadosDoFirebase();
+
+  /* ================= AUTH STATE LISTENER ================= */
+  onAuthStateChanged(auth, (user) => {
+      loggedInUser = user; 
+      updateUIAuth(user);
+      carregarDadosDoFirebase(); 
+  });
 
   /* ================= UI FUNCTIONS ================= */
-
+  
   window.abrirCadastro = function() {
+    if (!loggedInUser) {
+        showNotification("Você precisa estar logado para cadastrar veículos.", "error");
+        return;
+    }
+    
     editarIndex = null;
+    oldVehicleData = null; // Zera o dado antigo
     tempInstalacoes = [];
-    $("modalTitle").innerText = "Cadastrar veículo";
-    $("addTipo").value = "carro";
-    preencherAddMarca(); 
+    renderTempInstalacoes();
+    limparCamposInstalacao();
+    
+    $("modalTitle").innerText = "Cadastrar novo veículo/rastreador";
+    $("addTipo").value = 'carro'; 
     handleTipoChange(); 
     
-    ["addMarca","addModelo","addSubmodelo","addAno"].forEach(id => $(id).value = "");
-    limparCamposInstalacao();
-    renderTempInstalacoes();
-
+    ["addMarca", "addModelo", "addSubmodelo", "addAno"].forEach(id => $(id).value = '');
+    
     $("overlay").style.display = "block";
     $("modal").style.display = "block";
   };
@@ -373,13 +1365,18 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
     $("overlay").style.display = "none";
     $("modal").style.display = "none";
     editarIndex = null;
+    oldVehicleData = null; 
     tempInstalacoes = [];
   };
 
   window.abrirEditar = function() {
+    if (!loggedInUser) {
+        showNotification("Você precisa estar logado para acessar a edição.", "error");
+        return;
+    }
     $("editarAba").style.display = "block";
     $("gridPrincipal").style.display = "none";
-    popularFiltrosEdicao(db); // Inicia os filtros da aba de edição
+    popularFiltrosEdicao(db); 
     renderLista();
   };
 
@@ -395,25 +1392,11 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
   // Função para adaptar os campos de instalação
   function handleTipoChange() {
     const isRastreador = $("addTipo").value === 'rastreador';
-    
-    // 1. Alterna a visibilidade dos campos de detalhe de veículo
     $("localDetalheFields").style.display = isRastreador ? 'none' : 'block';
-    
-    // 2. Controla a visibilidade do campo Submodelo no modal (OCULTA PARA RASTREADOR)
     $("addSubmodeloWrap").style.display = isRastreador ? 'none' : 'block'; 
-
-    // 3. Ajusta o título da Seção 2
-    $("section2Title").innerHTML = isRastreador 
-        ? "2. Configuração de Cabos Padrão" 
-        : "2. Adicionar Opção de Instalação";
-
-    // 4. Renomeia o input/label 'Bloqueio' para 'Saida 1' para rastreadores
+    $("section2Title").innerHTML = isRastreador ? "2. Configuração de Cabos Padrão" : "2. Adicionar Opção de Instalação";
     $("output1Label").innerText = isRastreador ? "Saida 1 (Bloqueio)" : "Bloqueio";
-
-    // 5. Alterna a visibilidade dos campos específicos de rastreador
     $("trackerSpecificFields").style.display = isRastreador ? 'block' : 'none';
-
-    // 6. Popula a lista de marcas
     preencherAddMarca();
   }
   $("addTipo").addEventListener("change", handleTipoChange);
@@ -423,8 +1406,6 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
   
   window.adicionarInstalacaoNaLista = function() {
     const isRastreador = $("addTipo").value === 'rastreador';
-
-    // Nome é o Modelo do veículo OU o Nome do Local
     let nome = isRastreador ? `${$("addMarca").value} ${$("addModelo").value}`.trim() : $("addNomeLocal").value.trim();
     if(!nome || isRastreador && !$("addModelo").value.trim()) { 
         showNotification(isRastreador ? "Preencha o Modelo do rastreador (Seção 1)." : "Dê um nome para o local (ex: Painel).", "error"); 
@@ -433,12 +1414,11 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
     
     const novaInstalacao = {
       nomeLocal: nome,
-      // Para rastreador, detalhes é ignorado
       localDetalhe: isRastreador ? '' : $("addLocalDetalhe").value.trim(), 
       positivo: $("addPositivo").value.trim(),
       negativo: $("addNegativo").value.trim(),
       posChave: $("addPosChave").value.trim(),
-      bloqueio: $("addBloqueio").value.trim(), // Saida 1 / Bloqueio
+      bloqueio: $("addBloqueio").value.trim(), 
     };
 
     if (isRastreador) {
@@ -460,24 +1440,26 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
 
   window.editarInstalacaoTemp = function(index) {
       const item = tempInstalacoes[index];
+      // Adaptar para rastreador se for o caso
+      if ($("addTipo").value === 'rastreador') {
+          // No modo rastreador, o nomeLocal vem do Modelo+Marca, mas não é editável na seção de cabos
+          $("addNomeLocal").value = ''; 
+          $("addLocalDetalhe").value = ''; 
+      } else {
+          $("addNomeLocal").value = item.nomeLocal || '';
+          $("addLocalDetalhe").value = item.localDetalhe || '';
+      }
       
-      // Carrega campos comuns/veículo
-      $("addNomeLocal").value = item.nomeLocal || '';
-      $("addLocalDetalhe").value = item.localDetalhe || '';
       $("addPositivo").value = item.positivo || '';
       $("addNegativo").value = item.negativo || '';
       $("addPosChave").value = item.posChave || '';
       $("addBloqueio").value = item.bloqueio || '';
 
-      // Carrega campos específicos de rastreador, se existirem
       if (item.saida2 || item.entrada1 || item.entrada2) {
           $("addSaida2").value = item.saida2 || '';
           $("addEntrada1").value = item.entrada1 || '';
           $("addEntrada2").value = item.entrada2 || '';
-          // Se for Rastreador, o nome do local é o Modelo, não carregamos no campo localDetalheFields
-          $("addNomeLocal").value = ''; 
       } else {
-          // Limpa campos de rastreador
           $("addSaida2").value = '';
           $("addEntrada1").value = '';
           $("addEntrada2").value = '';
@@ -485,7 +1467,6 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
       
       tempInstalacoes.splice(index, 1);
       renderTempInstalacoes();
-      
       showNotification("Dados carregados. Edite e clique em '+ Adicionar' novamente.", "info");
       if(!item.saida2 && !item.entrada1 && !item.entrada2) $("addNomeLocal").focus();
   };
@@ -503,14 +1484,11 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
     tempInstalacoes.forEach((inst, index) => {
       let div = document.createElement("div");
       div.className = "install-item";
-      
       let details = inst.localDetalhe || "Sem detalhes";
       let title = inst.nomeLocal;
       
-      // Adiciona detalhes específicos do rastreador na visualização da lista
       if (inst.saida2 || inst.entrada1 || inst.entrada2) {
           details = `S2: ${inst.saida2 || '-'} | E1: ${inst.entrada1 || '-'} | E2: ${inst.entrada2 || '-'}`;
-          // Para rastreador, o título já é o modelo (definido em adicionarInstalacaoNaLista)
           title = "Modelo: " + title;
       } else {
           title = "Local: " + title;
@@ -523,14 +1501,14 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
         </div>
         <div style="display:flex; gap:6px;">
             <button class='btn btn-sec' style="padding:4px 10px; font-size:12px;" onclick="editarInstalacaoTemp(${index})">Editar</button>
-            <button class='btn btn-danger' style="padding:4px 10px; font-size:12px;" onclick="removerInstalacaoTemp(${index})">Remover</button>
+            <button class='btn btn-danger' style="padding:4px 10px; font-size:12px;" onclick="removerInstalacaoTemp(${index})">Excluir</button>
         </div>
       `;
       container.appendChild(div);
     });
   }
 
-  /* ================= BUSCA RÁPIDA (FUZZY SEARCH - PRINCIPAL) ================= */
+  /* ================= BUSCA RÁPIDA ================= */
   const mainInput = $("mainSearchInput");
   const suggestionsBox = $("mainSuggestions");
 
@@ -568,7 +1546,7 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
       if(e.target !== mainInput) suggestionsBox.style.display = "none";
   });
 
-  /* ================= BUSCA INTELIGENTE COM SELETOR ================= */
+  /* ================= BUSCA INTELIGENTE ================= */
 
   window.buscar = function() {
     let {tipoSelect,marcaSelect,modeloSelect,submodeloSelect,anoSelect} = ids();
@@ -576,7 +1554,7 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
     let r = db.find(v => v.tipo === tipoSelect.value && v.marca === marcaSelect.value && v.modelo === modeloSelect.value
       && (v.submodelo||"") === submodeloSelect.value && v.ano === anoSelect.value);
     
-    if(!r) { $("resultado").innerText = "Nenhum padrão encontrado."; return; }
+    if(!r) { $("resultado").innerHTML = "Nenhum padrão encontrado."; return; }
     exibirResultadoDireto(r);
   };
 
@@ -588,7 +1566,6 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
 
       let instalacoes = r.instalacoes || [];
       
-      // Retrocompatibilidade/Single entry mode
       if(instalacoes.length === 0 && r.local) {
           instalacoes.push({
             nomeLocal: "Padrão (Único)",
@@ -601,27 +1578,21 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
       }
 
       if(instalacoes.length === 0) {
-          $("resultado").innerText = "Veículo cadastrado, mas sem dados de fiação.";
+          $("resultado").innerHTML = "Veículo cadastrado, mas sem dados de fiação.";
       } else {
           const select = $("resultadoLocalSelect");
           select.innerHTML = "";
-          
-          // AJUSTA O TÍTULO DO SELETOR DE ACORDO COM O TIPO
           $("seletorLocalTitle").innerText = isRastreador ? "Modelo: " : "Local de instalação: ";
 
           instalacoes.forEach((inst, idx) => {
               let opt = document.createElement("option");
               opt.value = idx;
-              
               let title;
               if (isRastreador) {
-                  // Rastreador: mostra o nomeLocal que é a marca/modelo do rastreador
                   title = inst.nomeLocal; 
               } else {
-                  // Veículo: mostra o nome do local ou o detalhe se o nomeLocal for genérico
                   title = inst.nomeLocal + (inst.localDetalhe ? ` - ${inst.localDetalhe}` : "");
               }
-
               opt.text = title;
               select.appendChild(opt);
           });
@@ -635,51 +1606,52 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
       }
 
       const btnDiv = $("btnEditarResultado");
-      btnDiv.style.display = "block";
-      btnDiv.innerHTML = `<button class='btn btn-sec' onclick="editarVeiculo('${r.id}')">Editar este Veículo</button>`;
+      if (loggedInUser) {
+          btnDiv.style.display = "block";
+          btnDiv.innerHTML = `<button class='btn btn-sec' onclick="editarVeiculo('${r.id}')">Editar </button>`;
+      }
   }
 
   function renderizarDetalhesInstalacao(dados) {
-      // Verifica o tipo do veículo atualmente exibido
       const isRastreador = currentVehicleResult && currentVehicleResult.tipo === 'rastreador';
-      
-      // --- AJUSTES DO RÓTULO PRINCIPAL (Local vs Modelo) ---
       let mainLabel;
       let mainValue;
+      let icon = isRastreador ? '📡' : '📍';
 
       if (isRastreador) {
-          mainLabel = "Modelo";
-          // Para Rastreador, o valor principal é o nomeLocal (Marca/Modelo do Rastreador)
+          mainLabel = "Modelo do Rastreador";
           mainValue = dados.nomeLocal; 
       } else {
-          mainLabel = "Local de instalação";
-          // Para Veículo, o valor principal é a combinação NomeLocal e Detalhe
+          mainLabel = "Local de Instalação";
           mainValue = dados.nomeLocal + (dados.localDetalhe ? ` (${dados.localDetalhe})` : "");
       }
       
-      // --- AJUSTES DO RÓTULO DE BLOQUEIO ---
-      const bloqueioLabel = isRastreador ? "Bloqueio/Saida 1" : "Bloqueio";
+      const bloqueioLabel = isRastreador ? "Saida 1 (Bloqueio)" : "Bloqueio";
+      const bloqueioClass = isRastreador ? "poschave-val" : "bloqueio-val"; 
 
+      let html = `<div class="main-title-box">${icon} ${mainLabel}: **${mainValue}**</div>`;
 
-      // Campos básicos
-      let html = `<div style="font-family:Verdana;font-size:20px; color:white;">${mainLabel}: ${mainValue}</div>
-                  <div style="font-family:Verdana;font-size:20px; color:white;">Positivo: ${dados.positivo}</div>
-                  <div style="font-family:Verdana;font-size:20px; color:white;">Negativo: ${dados.negativo}</div>
-                  <div style="font-family:Verdana;font-size:20px; color:white;">Pós-chave: ${dados.posChave}</div>
-                  <div style="font-family:Verdana;font-size:20px; color:white;">${bloqueioLabel}: ${dados.bloqueio}</div>`;
+      const renderWireItem = (label, value, valueClass = "") => {
+          if (!value) return '';
+          const displayValue = value.length > 30 ? value.substring(0, 30) + '...' : value;
+          return `
+              <div class="wire-item">
+                  <span class="wire-label">${label}</span>
+                  <span class="wire-value ${valueClass}">${displayValue}</span>
+              </div>
+          `;
+      };
+
+      html += renderWireItem(' Positivo ', dados.positivo, 'positivo-val');
+      html += renderWireItem(' Negativo ', dados.negativo, 'negativo-val');
+      html += renderWireItem(' Pós-chave ', dados.posChave, 'poschave-val');
+      html += renderWireItem(` ${bloqueioLabel}`, dados.bloqueio, bloqueioClass);
       
-      // --- CAMPOS ESPECÍFICOS DO RASTREADOR (Inclusão Condicional, verificando se o valor existe) ---
       if (isRastreador) {
-          // Os campos de rastreador são exibidos apenas se tiverem conteúdo
-          if (dados.saida2) {
-              html += `<div style="font-family:Verdana;font-size:20px; color:white;">Saida 2: ${dados.saida2}</div>`;
-          }
-          if (dados.entrada1) {
-              html += `<div style="font-family:Verdana;font-size:20px; color:white;">Entrada 1: ${dados.entrada1}</div>`;
-          }
-          if (dados.entrada2) {
-              html += `<div style="font-family:Verdana;font-size:20px; color:white;">Entrada 2: ${dados.entrada2}</div>`;
-          }
+          html += '<div style="margin-top:10px; font-size:14px; font-weight:600; color:#0f766e; border-top: 1px solid #e2e8f0; padding-top: 10px;">Conexões Auxiliares (Opcional)</div>';
+          html += renderWireItem(' Saida 2', dados.saida2);
+          html += renderWireItem(' Entrada 1', dados.entrada1);
+          html += renderWireItem(' Entrada 2', dados.entrada2);
       }
       
       $("resultado").innerHTML = html;
@@ -689,41 +1661,45 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
     ["tipoSelect","marcaSelect","modeloSelect","submodeloSelect","anoSelect"].forEach(id => $(id).value = "");
     ["marcaWrap","modeloWrap","subWrap","anoWrap"].forEach(id => $(id).style.display = "none");
     $("seletorLocalWrap").style.display = "none";
-    $("btnEditarResultado").style.display = "none";
+    $("btnEditarResultado").style.display = "none"; 
     $("mainSearchInput").value = "";
-    $("resultado").innerText = "Sistema pronto. Faça sua busca.";
+    $("resultado").innerHTML = "Sistema pronto. Faça sua busca.";
   };
 
   /* ================= SALVAR, EXCLUIR E EDITAR ================= */
 
-  window.editarVeiculo = function(id) {
+ window.editarVeiculo = function(id) {
+    if (!loggedInUser) {
+        showNotification("Você precisa estar logado para EDITAR dados.", "error");
+        return;
+    }
     const v = userDB.find(x => x.id === id);
     if(!v) { showNotification('Veículo não encontrado.','error'); return; }
     
     editarIndex = id;
-    $("modalTitle").innerText = "Editar veículo";
-    
+    // NOVO: Armazena o estado anterior (deep copy para evitar modificação)
+    oldVehicleData = JSON.parse(JSON.stringify(v)); 
+
+    $("modalTitle").innerText = "Editar veículo ou rastreador";
     $("addTipo").value = v.tipo;
-    preencherAddMarca();
+    handleTipoChange(); 
     $("addMarca").value = v.marca;
     $("addModelo").value = v.modelo;
     $("addSubmodelo").value = v.submodelo;
     $("addAno").value = v.ano;
-
-    handleTipoChange(); 
-
+    
+    // Converte dados antigos para o novo formato de instalações
     tempInstalacoes = v.instalacoes || [];
     
-    // Retrocompatibilidade/Single entry mode
     if(tempInstalacoes.length === 0 && v.local) {
-         tempInstalacoes.push({
-            nomeLocal: "Instalação Padrão",
-            localDetalhe: v.local,
-            positivo: v.positivo,
-            negativo: v.negativo,
-            posChave: v.posChave,
-            bloqueio: v.bloqueio
-        });
+            tempInstalacoes.push({
+                nomeLocal: "Instalação Padrão",
+                localDetalhe: v.local,
+                positivo: v.positivo,
+                negativo: v.negativo,
+                posChave: v.posChave,
+                bloqueio: v.bloqueio
+            });
     }
 
     renderTempInstalacoes();
@@ -731,22 +1707,41 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
 
     $("overlay").style.display = "block";
     $("modal").style.display = "block";
-  };
+};
 
   window.removerVeiculo = async function(id) {
-      if(confirm("Tem certeza que deseja EXCLUIR este veículo permanentemente?")) {
+      if (!loggedInUser) {
+          showNotification("Você precisa estar logado para EXCLUIR dados.", "error");
+          return;
+      }
+      
+      const veiculoParaExcluir = userDB.find(x => x.id === id);
+
+      if(confirm(`Tem certeza que deseja EXCLUIR permanentemente: ${veiculoParaExcluir.marca} ${veiculoParaExcluir.modelo}?`)) {
           try {
               await deleteDoc(doc(dbFirestore, "veiculos", id));
-              showNotification("Veículo excluído com sucesso.", "success");
+              
+              if (veiculoParaExcluir) {
+                  // Opcional: Adiciona campos extras ao log para ter o ID
+                  await registrarAcao("EXCLUSAO", { id: id, ...veiculoParaExcluir });
+              }
+              
+              showNotification("Dados excluídos com sucesso.", "success");
               await carregarDadosDoFirebase();
           } catch(e) {
               console.error(e);
-              showNotification("Erro ao excluir veículo.", "error");
+              showNotification("Erro ao excluir dados.", "error");
           }
       }
   };
 
   $("btnSalvar").onclick = async () => {
+    if (!loggedInUser) {
+        showNotification("Você precisa estar logado para SALVAR/EDITAR dados.", "error");
+        fecharModal();
+        return;
+    }
+
     $("btnSalvar").innerText = "Salvando...";
     $("btnSalvar").disabled = true;
 
@@ -770,7 +1765,7 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
     };
 
     if(!v.tipo || !v.marca || !v.modelo || !v.ano) {
-      showNotification("Preencha Marca, Modelo e Ano.", "error");
+      showNotification("Preencha Tipo, Marca, Modelo e Ano.", "error");
       $("btnSalvar").innerText = "Salvar Veículo Completo";
       $("btnSalvar").disabled = false;
       return;
@@ -779,10 +1774,13 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
     try {
       if (editarIndex) {
         await updateDoc(doc(dbFirestore, "veiculos", editarIndex), v);
-        showNotification("Veículo atualizado!", "success");
+        // NOVO: Passa o oldVehicleData para o histórico
+        await registrarAcao("EDICAO", { id: editarIndex, ...v }, oldVehicleData); 
+        showNotification("Dados atualizados!", "success");
       } else {
-        await addDoc(veiculosCollection, v);
-        showNotification("Veículo cadastrado!", "success");
+        const docRef = await addDoc(veiculosCollection, v);
+        await registrarAcao("CADASTRO", { id: docRef.id, ...v });
+        showNotification("Dados cadastrados!", "success");
       }
       await carregarDadosDoFirebase();
       fecharModal();
@@ -792,6 +1790,7 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
     } finally {
       $("btnSalvar").innerText = "Salvar Veículo Completo";
       $("btnSalvar").disabled = false;
+      oldVehicleData = null; // Limpa o dado antigo após salvar
     }
   };
 
@@ -823,7 +1822,7 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
   function preencherAddMarca(){
     const t = $("addTipo").value;
     clearOptions("addMarca", "-- selecione --");
-    marcas[t].forEach(m => addOpt("addMarca", m));
+    marcas[t].forEach(m=>addOpt("addMarca",m));
   }
 
   /* ================= CASCATA BUSCA PRINCIPAL ================= */
@@ -995,36 +1994,30 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
   };
 
   // Listeners de filtro para atualizar a cascata E filtrar a lista.
-  // IMPORTANTE: Chamamos popularFiltrosEdicao para manter a cascata e, no final dela, chamamos popularAnosEdicao.
-  // O filtrarEdicao deve ser chamado em todos os eventos para atualizar a lista.
-
   $("editTipo").onchange = () => { 
-      // Resetar os filtros dependentes para começar a nova cascata
       clearOptions("editMarca"); clearOptions("editModelo"); clearOptions("editSub"); clearOptions("editAno");
       popularFiltrosEdicao(userDB); 
-      filtrarEdicao(); // Filtra imediatamente
+      filtrarEdicao(); 
   }; 
   
   $("editMarca").onchange = () => { 
-      // Resetar os filtros dependentes
       clearOptions("editModelo"); clearOptions("editSub"); clearOptions("editAno");
       popularFiltrosEdicao(userDB); 
-      filtrarEdicao(); // Filtra imediatamente
+      filtrarEdicao(); 
   };
   
   $("editModelo").onchange = () => { 
-      // Resetar os filtros dependentes
       clearOptions("editSub"); clearOptions("editAno");
       popularFiltrosEdicao(userDB); 
-      filtrarEdicao(); // Filtra imediatamente
+      filtrarEdicao(); 
   };
   
   $("editSub").onchange = () => { 
-      popularAnosEdicao(); // Popula Ano com base no novo Submodelo
-      filtrarEdicao(); // Filtra imediatamente
+      popularAnosEdicao(); 
+      filtrarEdicao(); 
   }; 
   
-  $("editAno").onchange = filtrarEdicao; // Filtra imediatamente
+  $("editAno").onchange = filtrarEdicao; 
 
   /* ================= LISTAGEM E RENDERIZAÇÃO ================= */
   
