@@ -1598,8 +1598,37 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
         } 
         
         // 2. Lógica para o MODAL (Cadastro/Edição) - Garante que os elementos existem antes de manipular
-        if ($("addTipo")) { 
+        if ($("addTipo")) {
+
+const addModeloInput = $("addModelo");
+            const addSubmodeloInput = $("addSubmodelo");
             
+            // ============== INÍCIO DA NOVA LÓGICA DE PLACEHOLDERS ==============
+            if (addModeloInput) {
+                switch (tipo) {
+                    case 'carro':
+                        addModeloInput.placeholder = "Ex: Uno, Onix , Corola";
+                        if(addSubmodeloInput) addSubmodeloInput.placeholder = "Ex: Way 1.3, Joy, LTZ, Cross";
+                        break;
+                    case 'moto':
+                        addModeloInput.placeholder = "Ex: CG, Biz, Fazer";
+                        if(addSubmodeloInput) addSubmodeloInput.placeholder = "Ex: Fan 125, 110i, 250 ABS";
+                        break;
+                    case 'caminhao':
+                        addModeloInput.placeholder = "Ex: FH 460, Actros 2651";
+                        if(addSubmodeloInput) addSubmodeloInput.placeholder = "Ex: Bitruck, 4x2, Toco";
+                        break;
+                    case 'rastreador':
+                        addModeloInput.placeholder = "Ex: ST8210, NT40, KIT:12042 (Nome do Equipamento)";
+                        if(addSubmodeloInput) addSubmodeloInput.placeholder = ""; // O campo fica invisível, mas por segurança
+                        break;
+                    default:
+                        addModeloInput.placeholder = "";
+                        if(addSubmodeloInput) addSubmodeloInput.placeholder = "";
+                }
+            }
+            // ============== FIM DA NOVA LÓGICA DE PLACEHOLDERS ==============
+
             // NOVO: Controle de layout do grid de submodelo/ano (section 1)
             const vehicleDetailsGrid = $("vehicleDetailsGrid");
             if (vehicleDetailsGrid) {
