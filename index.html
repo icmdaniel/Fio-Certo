@@ -489,13 +489,13 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
       </div>
       <div><label>Marca</label><select id="addMarca"></select></div>
   </div>
-  <label>Modelo</label><input id="addModelo">
+  <label>Modelo</label><input id="addModelo" placeholder="Ex: Uno, Onix, CG, Biz">
   <div id="vehicleDetailsGrid" class="grid" style="grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 0;">
     <div id="addSubmodeloWrap">
-        <label>Submodelo</label><input id="addSubmodelo">
+        <label>Submodelo</label><input id="addSubmodelo" placeholder="Ex: Way 1.3, Joy, LTZ, Fan 125, Titan 160">
     </div>
     <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-        <div><label>Ano (ou Início)</label><input id="addAno" type="number"></div>
+        <div><label>Ano (ou Início)</label><input id="addAno" type="number" placeholder="Ex: 2015"></div>
         <div><label>Ano Final (Opcional)</label><input id="addAnoFinal" type="number" placeholder="Ex: 2020"></div>
     </div>
   </div>
@@ -2085,8 +2085,8 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
 
   function renderResultadoFios(veiculo, dados) {
     const isRastreador = veiculo.tipo === 'rastreador';
-    let icon = isRastreador ? '📡' : '🚗';
-    let mainLabel = isRastreador ? 'Rastreador' : 'Veículo';
+    let icon = isRastreador ? '📡':'>';
+    let mainLabel = isRastreador ? 'Rastreador':'Veículo';
     const anoDisplay = veiculo.anoFinal ? `${veiculo.ano} a ${veiculo.anoFinal}` : veiculo.ano;
     let mainValue = `${veiculo.marca} ${veiculo.modelo} (${anoDisplay})${veiculo.submodelo && !isRastreador ? ` ${veiculo.submodelo}` : ''}`;
     
