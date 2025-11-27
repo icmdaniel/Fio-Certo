@@ -490,11 +490,14 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
       <div><label>Marca</label><select id="addMarca"></select></div>
   </div>
   <label>Modelo</label><input id="addModelo">
-  <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 0;">
+  <div id="vehicleDetailsGrid" class="grid" style="grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 0;">
     <div id="addSubmodeloWrap">
         <label>Submodelo</label><input id="addSubmodelo">
     </div>
-    <div><label>Ano</label><input id="addAno" type="number"></div>
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <div><label>Ano (ou Início)</label><input id="addAno" type="number"></div>
+        <div><label>Ano Final (Opcional)</label><input id="addAnoFinal" type="number" placeholder="Ex: 2020"></div>
+    </div>
   </div>
 
   <div class="section-title" id="section2Title">2. Adicionar Opção de Instalação</div>
@@ -512,18 +515,17 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
         <div><label>Positivo</label><input id="addPositivo"></div>
         <div><div><label>Negativo</label><input id="addNegativo"></div></div>
       </div>
-      <div class="grid" id="posChaveBloqueioGrid" style="grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 0;">
-        <div><label>Pós-chave</label><input id="addPosChave"></div>
-        <div><label id="output1Label">Bloqueio</label><input id="addBloqueio"></div>
+      
+      <div id="wireConnectionsGrid" class="grid" style="grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 0;">
+        <div><label id="labelPosChave">Pós-chave</label><input id="addPosChave"></div>
+        <div><label id="labelBloqueio">Bloqueio</label><input id="addBloqueio"></div>
       </div>
 
-      <div id="trackerSpecificFields" style="display:none;">
-          <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 0;">
-              <div><label>Saida 2</label><input id="addSaida2"></div>
-              <div><label>Entrada 1</label><input id="addEntrada1"></div>
-          </div>
-          <div><label>Entrada 2</label><input id="addEntrada2"></div>
+      <div id="auxConnectionsGrid" class="grid" style="grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #e6eef7; display:none;">
+          <div><label id="labelSaida2">Saida 2</label><input id="addSaida2"></div>
+          <div><label id="labelEntrada2">Entrada 2</label><input id="addEntrada2"></div>
       </div>
+
 
       <button class="btn btn-sec" style="width:100%; margin-top:10px; border-color:var(--accent); color:var(--accent-darker)" onclick="adicionarInstalacaoNaLista()">+ Adicionar esta Opção</button>
   </div>
@@ -535,7 +537,7 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
 
   <div class="row" style="justify-content:flex-end;margin-top:14px; border-top: 2px solid #ddd; padding-top:10px;">
     <button class="btn btn-sec" onclick="fecharModal()">Cancelar</button>
-    <button class="btn btn-green" id="btnSalvar">Salvar Veículo ou Rastreador Completo</button>
+    <button class="btn btn-green" id="btnSalvar" onclick="salvarVeiculo()">Salvar Veículo ou Rastreador Completo</button>
   </div>
 </div>
 <div id="historicoPasswordModal">
@@ -741,211 +743,208 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
     }
 
     createUserWithEmailAndPassword(auth, email, senha)
-        .then(() => {
-            showNotification('Cadastro realizado e Login efetuado!', 'success');
-            fecharModalAuth();
-        })
-        .catch((error) => {
-            console.error(error);
-            showNotification('Erro no cadastro: ' + error.message.replace("Firebase: ", ""), 'error');
-        });
+      .then(() => {
+        showNotification('Cadastro realizado e Login efetuado!', 'success');
+        fecharModalAuth();
+      })
+      .catch((error) => {
+        console.error(error);
+        showNotification('Erro no cadastro: ' + error.message.replace("Firebase: ", ""), 'error');
+      });
   };
 
   window.handleLogin = function() {
     const email = $("authEmail").value;
     const senha = $("authSenha").value;
+
     signInWithEmailAndPassword(auth, email, senha)
-        .then(() => {
-            showNotification('Login realizado com sucesso!', 'success');
-            fecharModalAuth();
-        })
-        .catch((error) => {
-            console.error(error);
-            showNotification('Erro no login: ' + error.message.replace("Firebase: ", ""), 'error');
-        });
+      .then(() => {
+        showNotification('Login realizado com sucesso!', 'success');
+        fecharModalAuth();
+      })
+      .catch((error) => {
+        console.error(error);
+        showNotification('Erro no login: ' + error.message.replace("Firebase: ", ""), 'error');
+      });
   };
 
   window.fazerLogout = function() {
-      signOut(auth)
-          .then(() => {
-              showNotification('Sessão encerrada.', 'info');
-          })
-          .catch((error) => {
-              showNotification('Erro ao fazer logout.', 'error');
-          });
+    signOut(auth).then(() => {
+        showNotification("Você foi desconectado.", "info");
+    }).catch((error) => {
+        console.error("Erro ao fazer logout:", error);
+        showNotification("Erro ao fazer logout.", "error");
+    });
   };
-
-  /* ================= DROPDOWN MENU LOGIC (NOVO) ================= */
-  
-  window.toggleMenu = function() {
-    const dropdown = $("userMenuDropdown");
-    dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
-  };
-  
-  // Fecha o menu se o usuário clicar fora dele
-  document.addEventListener('click', (event) => {
-      const dropdownContainer = $("menuDropdownContainer");
-      const dropdown = $("userMenuDropdown");
-
-      if (dropdownContainer && !dropdownContainer.contains(event.target)) {
-          if (dropdown && dropdown.style.display === "block") {
-              dropdown.style.display = "none";
-          }
-      }
-  });
-
 
   function updateUIAuth(user) {
-      const loginRegisterBtn = $("loginRegisterButton");
-      const menuDropdownContainer = $("menuDropdownContainer"); 
+    const loggedOutElements = document.querySelectorAll('#loginRegisterButton');
+    const loggedInElements = document.querySelectorAll('#menuDropdownContainer');
+    
+    loggedOutElements.forEach(el => el.style.display = user ? 'none' : 'block');
+    loggedInElements.forEach(el => el.style.display = user ? 'block' : 'none');
 
-      if (user) {
-          loginRegisterBtn.style.display = "none";
-          menuDropdownContainer.style.display = "inline-block"; // Mostra o menu de ações
-          const dropdown = $("userMenuDropdown");
-          if (dropdown) dropdown.style.display = "none"; // Garante que o menu esteja fechado
-      } else {
-          loginRegisterBtn.style.display = "inline-block";
-          menuDropdownContainer.style.display = "none"; // Esconde o menu de ações
-          voltarBusca(); 
-      }
+    // Se estiver logado e na aba de edição, atualiza a lista
+    if (user) {
+        if ($("editarAba").style.display === "block") {
+            // Inicializa todos os filtros corretamente
+            popularMarcasEdit();
+            popularModelosEdit();
+            popularSubsEdit();
+            popularAnosEdit();
+            renderLista();
+        }
+    } else {
+        // Se deslogou, volta para a busca
+        $("editarAba").style.display = "none";
+        $("gridPrincipal").style.display = "grid";
+        $("resultado").innerHTML = "Sistema pronto. Faça sua busca.";
+    }
   }
+
+  /* ================= DROP-DOWN MENU ACTIONS ================= */
   
+  window.toggleMenu = function() {
+    const menu = $("userMenuDropdown");
+    menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+  };
+  
+  // Fecha o menu se clicar fora
+  document.addEventListener('click', function(event) {
+    const container = $("menuDropdownContainer");
+    const menu = $("userMenuDropdown");
+    const toggleButton = document.querySelector('.menu-toggle-btn');
+    
+    if (container.style.display === 'block' && menu.style.display === 'block' && event.target !== container && !container.contains(event.target)) {
+        // Verifica se o clique não foi no próprio botão toggle
+        if (event.target !== toggleButton) {
+            menu.style.display = 'none';
+        }
+    }
+  });
+
   /* ================= ALTERAR SENHA FIREBASE (LOGIN) ================= */
   window.abrirModalAlterarSenha = function() {
-      if (!loggedInUser) {
-         showNotification("Faça login para alterar a senha.", "error");
-         return;
-      }
-      $("historicoModalOverlay").style.display = "block"; 
-      $("modalAlterarSenha").style.display = "block";
-      $("currentPasswordInput").value = "";
-      $("newPasswordInput").value = "";
-      $("currentPasswordInput").focus();
+    if (!loggedInUser) {
+        showNotification("Faça login para alterar a senha.", "error");
+        return;
+    }
+    $("historicoModalOverlay").style.display = "block";
+    $("modalAlterarSenha").style.display = "block";
+    $("currentPasswordInput").value = "";
+    $("newPasswordInput").value = "";
+    $("currentPasswordInput").focus();
   };
-  
+
   window.fecharModalAlterarSenha = function() {
-      $("historicoModalOverlay").style.display = "none";
-      $("modalAlterarSenha").style.display = "none";
+    $("historicoModalOverlay").style.display = "none";
+    $("modalAlterarSenha").style.display = "none";
   };
-  
+
   window.alterarSenha = async function() {
-      const senhaAtual = $("currentPasswordInput").value;
-      const novaSenha = $("newPasswordInput").value;
-      
-      if (!senhaAtual || !novaSenha) {
-          showNotification("Preencha todos os campos.", "error");
-          return;
-      }
-      
-      if (novaSenha.length < 6) {
-          showNotification("A nova senha deve ter no mínimo 6 caracteres.", "error");
-          return;
-      }
-      
-      if (senhaAtual === novaSenha) {
-          showNotification("A nova senha deve ser diferente da atual.", "error");
-          return;
-      }
-      
-      const btn = document.querySelector("#modalAlterarSenha .btn-primary");
-      btn.innerText = "Verificando...";
-      btn.disabled = true;
+    const senhaAtual = $("currentPasswordInput").value;
+    const novaSenha = $("newPasswordInput").value;
 
-      try {
-          const credential = EmailAuthProvider.credential(loggedInUser.email, senhaAtual);
-          
-          await reauthenticateWithCredential(loggedInUser, credential);
-          await updatePassword(loggedInUser, novaSenha);
-          
-          showNotification("Sua senha de login foi alterada com sucesso!", "success");
-          fecharModalAlterarSenha();
-          fazerLogout(); 
-          
-      } catch (error) {
-          console.error("Erro ao alterar senha:", error);
-          if (error.code === 'auth/wrong-password') {
-               showNotification("Senha atual incorreta.", "error");
-          } else if (error.code === 'auth/requires-recent-login') {
-               showNotification("Por segurança, faça login novamente e tente a alteração.", "error");
-          } else {
-               showNotification("Erro ao alterar senha. Verifique os dados.", "error");
-          }
-      } finally {
-          btn.innerText = "Confirmar Alteração";
-          btn.disabled = false;
-      }
+    if (!senhaAtual || !novaSenha) {
+        showNotification("Preencha todos os campos.", "error");
+        return;
+    }
+
+    if (novaSenha.length < 6) {
+        showNotification("A nova senha deve ter no mínimo 6 caracteres.", "error");
+        return;
+    }
+    
+    if (senhaAtual === novaSenha) {
+        showNotification("A nova senha deve ser diferente da atual.", "error");
+        return;
+    }
+
+    const btn = document.querySelector("#modalAlterarSenha .btn-primary");
+    btn.innerText = "Verificando...";
+    btn.disabled = true;
+
+    try {
+        const credential = EmailAuthProvider.credential(loggedInUser.email, senhaAtual);
+        await reauthenticateWithCredential(loggedInUser, credential);
+        await updatePassword(loggedInUser, novaSenha);
+        showNotification("Sua senha de login foi alterada com sucesso!", "success");
+        fecharModalAlterarSenha();
+        fazerLogout();
+    } catch (error) {
+        console.error("Erro ao alterar senha:", error);
+        if (error.code === 'auth/wrong-password') {
+            showNotification("Senha atual incorreta.", "error");
+        } else if (error.code === 'auth/requires-recent-login') {
+            showNotification("Por segurança, faça login novamente e tente a alteração.", "error");
+        } else {
+            showNotification("Erro ao alterar senha. Verifique os dados.", "error");
+        }
+    } finally {
+        btn.innerText = "Confirmar Alteração";
+        btn.disabled = false;
+    }
   };
 
-
-  /* ================= HISTÓRICO DE AÇÕES - CONTROLE DE ACESSO (SENHA SECRETA) ================= */
-  
+   /* ================= HISTÓRICO DE AÇÕES ================= */
   window.abrirHistorico = function() {
       if (!loggedInUser) {
-         showNotification("Faça login para ver o histórico.", "error");
-         return;
+          showNotification("Você precisa estar logado para acessar o Histórico.", "error");
+          return;
       }
-      $("historicoPasswordModal").style.display = "block";
       $("historicoModalOverlay").style.display = "block";
+      $("historicoPasswordModal").style.display = "block";
       $("historicoSenhaInput").value = "";
       $("historicoSenhaInput").focus();
   };
-  
+
   window.fecharHistoricoPasswordModal = function() {
-      $("historicoPasswordModal").style.display = "none";
       $("historicoModalOverlay").style.display = "none";
+      $("historicoPasswordModal").style.display = "none";
   };
-  
+
   window.fecharHistoricoModal = function() {
       $("historicoModalOverlay").style.display = "none";
       $("historicoModal").style.display = "none";
-      historyData = []; 
+  };
+
+  window.verificarSenhaHistorico = async function() {
+      const senha = $("historicoSenhaInput").value.trim();
+      if (senha !== HISTORY_SECRET_CODE) {
+          showNotification('Código secreto incorreto.', 'error');
+          return;
+      }
+      fecharHistoricoPasswordModal();
+      $("historicoModal").style.display = "block";
+
+      // Reseta a paginação e filtros ao abrir o modal
       lastVisibleHistoryDoc = null; 
       hasMoreHistory = true; 
+      historyData = []; 
+
       // Limpa os filtros
       $("historySearchInput").value = "";
       $("historyTipoSelect").value = "";
-      $("historyUserSelect").value = "";
+      $("historyUserSelect").innerHTML = '<option value="">-- todos --</option>'; // Limpa e adiciona o padrão
       $("historyDateStart").value = "";
-      $("historyDateEnd").value = ""; 
+      $("historyDateEnd").value = "";
+
+      // Chamada para a nova função de fetch em lote (carga inicial)
+      await fetchHistoryBatch(true);
   };
 
-  
-  window.verificarSenhaHistorico = async function() {
-      const senhaDigitada = $("historicoSenhaInput").value.trim();
-      
-      if (!senhaDigitada) {
-          showNotification("O código secreto é obrigatório.", "error");
-          return;
-      }
-      
-      // *** VERIFICAÇÃO DO CÓDIGO SECRETO FIXO ***
-      if (senhaDigitada === HISTORY_SECRET_CODE) { 
-          fecharHistoricoPasswordModal();
-          $("historicoModalOverlay").style.display = "block";
-          $("historicoModal").style.display = "block";
-          await carregarHistorico();
-      } else {
-          showNotification("Código secreto incorreto. Acesso negado.", "error");
-      }
-  };
-
-
-  // Salva o objeto DADOS completo e DADOS ANTIGOS (se for edição)
+  // Função para registrar ação no Firestore, recebe o tipo, o documento completo e DADOS ANTIGOS (se for edição)
   async function registrarAcao(tipo, dados, dadosAntigos = null) {
-      if (!loggedInUser) return; 
-
+      if (!loggedInUser) return;
       try {
           const acao = {
               tipo: tipo, // CADASTRO, EDICAO, EXCLUSAO
-              dados_completos: dados, 
+              dados_completos: dados,
               dados_antigos: dadosAntigos, // NOVO: Para comparação na edição
-              
               veiculo_marca: dados.marca,
               veiculo_modelo: dados.modelo,
               veiculo_ano: dados.ano,
-              
-              usuario: loggedInUser.email, 
+              usuario: loggedInUser.email,
               data: new Date().toISOString()
           };
           await addDoc(historicoAcoesCollection, acao);
@@ -966,68 +965,66 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
   // Helper para formatar os detalhes de instalação (blocos)
   function renderInstalacoes(instalacoes, isNew, oldInstalacoes = []) {
       if (!instalacoes || instalacoes.length === 0) return '<div>Nenhuma instalação cadastrada.</div>';
-      
+
       let html = '';
       instalacoes.forEach((inst, idx) => {
           let changeFlag = '';
-          
           if (isNew) {
-              const oldInst = oldInstalacoes.find(o => 
-                  o.nomeLocal === inst.nomeLocal && 
-                  o.localDetalhe === inst.localDetalhe && 
-                  o.positivo === inst.positivo &&
-                  o.negativo === inst.negativo &&
-                  o.posChave === inst.posChave &&
-                  o.bloqueio === inst.bloqueio
-              );
-              if (!oldInst) changeFlag = ' **(NOVA)**';
+              const oldInst = oldInstalacoes.find(o => o.nomeLocal === inst.nomeLocal) || {};
+              // Verifica se alguma propriedade chave mudou
+              if (inst.positivo !== oldInst.positivo ||
+                  inst.negativo !== oldInst.negativo ||
+                  inst.posChave !== oldInst.posChave ||
+                  inst.bloqueio !== oldInst.bloqueio ||
+                  inst.localDetalhe !== oldInst.localDetalhe ||
+                  inst.saida2 !== oldInst.saida2 ||
+                  inst.entrada2 !== oldInst.entrada2) {
+                  changeFlag = ' <span style="color:#c52438; font-weight:700;">(EDITADO)</span>';
+              }
           }
+          
+          // Adicionado verificações de existência (|| '-') para as propriedades de inst
+          const isRastreador = inst.tipo === 'rastreador' || currentVehicleResult?.tipo === 'rastreador';
+          const posChaveLabel = isRastreador ? 'Saida 1' : 'Pós-chave';
+          const bloqueioLabel = isRastreador ? 'Entrada 1/Bloqueio' : 'Bloqueio';
+          const wireInfoAux = isRastreador ? `<span style="display:block;">Saida 2: ${inst.saida2 || '-'} | Entrada 2: ${inst.entrada2 || '-'}</span>` : '';
 
-          const details = inst.localDetalhe || "Sem detalhes";
-          let title = inst.nomeLocal;
-
-          // Monta o item de instalação
           html += `
-          <div class="history-install-item">
-              <strong>${title}</strong>${changeFlag}<br>
-              <span style="display:block;">Pos: ${inst.positivo || '-'} | Neg: ${inst.negativo || '-'} | Pós-Chave: ${inst.posChave || '-'} | Bloqueio: ${inst.bloqueio || '-'}</span>
-              ${inst.saida2 ? `<span style="display:block;">S2: ${inst.saida2 || '-'} | E1: ${inst.entrada1 || '-'} | E2: ${inst.entrada2 || '-'}</span>` : ''}
-              ${details !== "Sem detalhes" && !inst.saida2 ? `<i>Detalhe: ${details}</i>` : ''}
-          </div>`;
+              <div class="history-install-item">
+                  <strong>Local: ${inst.nomeLocal || '-'} ${changeFlag}</strong> 
+                  ${inst.localDetalhe ? `<span>Detalhe: ${inst.localDetalhe}</span>` : ''}
+                  <span>Positivo: ${inst.positivo || '-'} | Negativo: ${inst.negativo || '-'}</span>
+                  <span>${posChaveLabel}: ${inst.posChave || '-'} | ${bloqueioLabel}: ${inst.bloqueio || '-'}</span>
+                  ${wireInfoAux}
+              </div>
+          `;
       });
       return html;
   }
 
-  // Helper para renderizar dados em um único bloco (CADASTRO ou EXCLUSAO)
-  function renderSingleDetails(dados, tipo) {
-      const isRastreador = dados.tipo === 'rastreador';
-      const labelSubmodelo = isRastreador ? "Modelo Rastreador" : "Submodelo";
-      
-      // Para rastreador, o submodelo/modelo rastreador fica no nomeLocal da primeira instalação
-      const valueSubmodelo = isRastreador ? dados.instalacoes?.[0]?.nomeLocal : dados.submodelo;
 
-      let html = `<div style='margin-top:5px;'>`;
-      html += `<b>Tipo:</b> ${dados.tipo || '-'}<br>`;
-      html += `<b>Marca:</b> ${dados.marca || '-'}<br>`;
-      html += `<b>Modelo:</b> ${dados.modelo || '-'}<br>`;
-      html += `<b>${labelSubmodelo}:</b> ${valueSubmodelo || '-'}<br>`;
-      html += `<b>Ano:</b> ${dados.ano || '-'}<br>`;
-      html += `<div style='margin-top:8px;'><b>Instalações (${dados.instalacoes?.length || 0}):</b></div>`;
-      html += renderInstalacoes(dados.instalacoes, false); 
-      html += `</div>`;
-      return html;
-  }
-  
-  // Helper para renderizar a comparação (EDICAO)
+  // Helper para renderizar a comparação de dados em uma EDIÇÃO (EDICAO)
   function renderComparisonDetails(antigo, novo) {
       const fields = ['tipo', 'marca', 'modelo', 'submodelo', 'ano'];
-      const isRastreador = novo.tipo === 'rastreador';
+      // Certifica-se que novo tem um valor ou é um objeto vazio para segurança
+      const dadosNovo = novo || {};
+      const dadosAntigo = antigo || {};
+      const isRastreador = dadosNovo.tipo === 'rastreador';
       const labelSubmodelo = isRastreador ? "Modelo Rastreador" : "Submodelo";
-
+      
       const getVal = (data, field) => {
           // Se for Rastreador, o "submodelo" é o nomeLocal da primeira instalação
           if (field === 'submodelo' && isRastreador) {
               return data.instalacoes?.[0]?.nomeLocal || '-';
+          }
+          if (field === 'ano') {
+             // Tratamento para ano e anoFinal com valores seguros
+             const anoStart = data.ano || '-';
+             const anoEnd = data.anoFinal;
+
+             if (anoStart === '-') return '-';
+             
+             return anoEnd ? `${anoStart} a ${anoEnd}` : `${anoStart}`;
           }
           return data[field] || '-';
       };
@@ -1037,11 +1034,14 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
 
       // Comparação dos campos básicos
       fields.forEach(field => {
-          const label = field === 'submodelo' ? labelSubmodelo : field.charAt(0).toUpperCase() + field.slice(1);
-          const valAntigo = getVal(antigo, field);
-          const valNovo = getVal(novo, field);
-          const changed = valAntigo !== valNovo;
+          // Pula o campo Submodelo para Rastreador, pois ele não existe no cadastro.
+          if (isRastreador && field === 'submodelo') return;
 
+          const label = field.charAt(0).toUpperCase() + field.slice(1);
+          const valAntigo = getVal(dadosAntigo, field);
+          const valNovo = getVal(dadosNovo, field);
+          
+          const changed = valAntigo !== valNovo;
           const spanAntigo = changed ? `<span class="changed-field">${valAntigo}</span>` : valAntigo;
           const spanNovo = changed ? `<span class="changed-field">${valNovo}</span>` : valNovo;
 
@@ -1050,263 +1050,217 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
       });
 
       // Comparação das Instalações (Aqui é mais complexo, apenas listamos os blocos)
-      htmlAntigo += `<div style='margin-top:10px;'><b>Instalações (${antigo.instalacoes?.length || 0}):</b></div>`;
-      htmlAntigo += renderInstalacoes(antigo.instalacoes, false);
+      htmlAntigo += `<div style='margin-top:10px;'><b>Instalações (${dadosAntigo.instalacoes?.length || 0}):</b></div>`;
+      htmlAntigo += renderInstalacoes(dadosAntigo.instalacoes); 
+      
+      // Passa as instalações antigas para a função renderInstalacoes do NOVO para marcar o que mudou
+      htmlNovo += `<div style='margin-top:10px;'><b>Instalações (${dadosNovo.instalacoes?.length || 0}):</b></div>`;
+      htmlNovo += renderInstalacoes(dadosNovo.instalacoes, true, dadosAntigo.instalacoes); 
 
-      htmlNovo += `<div style='margin-top:10px;'><b>Instalações (${novo.instalacoes?.length || 0}):</b></div>`;
-      // Passamos as instalações antigas para a nova função para ela destacar as NOVAS (se for o caso)
-      htmlNovo += renderInstalacoes(novo.instalacoes, true, antigo.instalacoes);
-
-
-      return `
-          <div class="comparison-container">
-              <div class="comparison-box">${htmlAntigo}</div>
-              <div class="comparison-box">${htmlNovo}</div>
-          </div>
-      `;
+      return `<div class="comparison-container"><div class="comparison-box">${htmlAntigo}</div><div class="comparison-box">${htmlNovo}</div></div>`;
   }
 
-  // Função principal para formatar os detalhes do Histórico
-  function formatarDetalhesHtml(acao) {
-      const dados = acao.dados_completos;
-      const dadosAntigos = acao.dados_antigos; 
-      
-      if (!dados) return "Sem detalhes salvos.";
+  // Helper para renderizar os detalhes completos de um item do histórico (EXCLUSAO / CADASTRO)
+  function renderFullDetails(acao) {
+      if (acao.dados_completos) {
+          const dados = acao.dados_completos; // Variável local para acesso seguro
+          const isRastreador = dados.tipo === 'rastreador';
+          let html = '';
+          html += `<p><b>ID do Documento:</b> ${dados.id || '-'}</p>`;
+          html += `<p><b>Tipo:</b> ${dados.tipo || '-'}</p>`;
+          html += `<p><b>Marca:</b> ${dados.marca || '-'}</p>`;
+          html += `<p><b>Modelo:</b> ${dados.modelo || '-'}</p>`;
+          
+          if (!isRastreador) { // Pula submodelo se for rastreador
+              html += `<p><b>Submodelo:</b> ${dados.submodelo || '-'}</p>`;
+          }
 
-      if (acao.tipo === 'EDICAO' && dadosAntigos) {
-          return renderComparisonDetails(dadosAntigos, dados);
+          // Uso de verificação mais robusta para `anoFinal` e `ano`
+          const anoStr = (dados.anoFinal && dados.ano) ? `${dados.ano} a ${dados.anoFinal}` : dados.ano || '-';
+          html += `<p><b>Ano:</b> ${anoStr}</p>`;
+
+          html += `<div style='margin-top:10px;'><b>Instalações (${dados.instalacoes?.length || 0}):</b></div>`;
+          html += renderInstalacoes(dados.instalacoes);
+
+          return html;
       }
-      
-      // Para CADASTRO e EXCLUSAO, mostramos os detalhes em um bloco único
-      return renderSingleDetails(dados, acao.tipo);
+      return 'Detalhes indisponíveis.';
   }
+  
+  // Função de fetch paginada do histórico
+  window.fetchHistoryBatch = async function(isInitialLoad) {
+      if (isLoadingHistory || (!hasMoreHistory && !isInitialLoad)) return;
 
-  // Renderiza a lista de histórico (usada após carregar ou filtrar)
-  function renderHistoricoLista(data) {
+      const btn = $("btnCarregarMaisHistorico");
+      const listaDiv = $("historicoLista");
+      const historyEndMessage = $("historyEndMessage");
+      
+      isLoadingHistory = true;
+      historyEndMessage.style.display = "none";
+      btn.innerText = isInitialLoad ? "Carregando..." : "Carregando mais...";
+      btn.disabled = true;
+      // Garante que o botão esteja visível durante o carregamento inicial
+      if (isInitialLoad) btn.style.display = "block"; 
+
+      if(isInitialLoad) {
+          historyData = [];
+          listaDiv.innerHTML = '<p style="text-align:center; color:var(--muted)">Carregando histórico...</p>';
+      }
+
+
+      try {
+          let q;
+          if (!isInitialLoad && lastVisibleHistoryDoc) {
+              // Se houver um último documento visível, busca a próxima página
+              q = query(historicoAcoesCollection, orderBy("data", "desc"), startAfter(lastVisibleHistoryDoc), limit(HISTORY_BATCH_SIZE));
+          } else {
+              // Primeira busca
+              q = query(historicoAcoesCollection, orderBy("data", "desc"), limit(HISTORY_BATCH_SIZE));
+          }
+
+          const querySnapshot = await getDocs(q);
+          const newDocs = [];
+          let lastDoc = null;
+          
+          querySnapshot.forEach((doc) => {
+              newDocs.push({ id: doc.id, ...doc.data() });
+              lastDoc = doc;
+          });
+
+          if (lastDoc) {
+              lastVisibleHistoryDoc = lastDoc;
+          }
+
+          if (newDocs.length < HISTORY_BATCH_SIZE) {
+              hasMoreHistory = false;
+          }
+
+          // Adiciona os novos documentos à lista global e renderiza
+          historyData.push(...newDocs);
+          renderHistoricoLista(historyData); 
+          
+          // Popula o filtro de usuários (apenas na carga inicial)
+          if(isInitialLoad) {
+              const users = Array.from(new Set(historyData.map(a => a.usuario))).sort();
+              users.forEach(u => addOpt("historyUserSelect", u));
+          }
+
+      } catch (e) {
+          console.error("Erro ao carregar histórico: ", e);
+          hasMoreHistory = false;
+          showNotification("Erro ao carregar histórico de ações.", "error");
+          if(isInitialLoad) {
+              $("historicoLista").innerHTML = '<p style="text-align:center; color:var(--danger)">Erro ao carregar histórico.</p>';
+          }
+      } finally {
+          isLoadingHistory = false;
+          btn.innerText = "Carregar Mais 50 Registros Antigos";
+          btn.disabled = false;
+          // Esconde o botão se não houver mais
+          if (!hasMoreHistory) {
+              btn.style.display = "none";
+              historyEndMessage.style.display = "block";
+          } else if (historyData.length === 0) {
+              // Caso não tenha nenhum dado
+              btn.style.display = "none";
+              $("historicoLista").innerHTML = '<p style="text-align:center; color:var(--muted)">Nenhum registro encontrado.</p>';
+          } else {
+             btn.style.display = "block";
+          }
+      }
+  };
+
+
+  function renderHistoricoLista(lista) {
       const listaDiv = $("historicoLista");
       listaDiv.innerHTML = "";
       
-      if (data.length === 0) {
-          listaDiv.innerHTML = '<p style="text-align:center; color:var(--muted);">Nenhuma ação encontrada com os filtros atuais.</p>';
+      // Aplica os filtros locais
+      const termo = $("historySearchInput").value.toLowerCase().trim();
+      const tipo = $("historyTipoSelect").value;
+      const usuario = $("historyUserSelect").value;
+      const dataInicio = $("historyDateStart").value;
+      const dataFim = $("historyDateEnd").value;
+
+      let dataInicioMs = 0;
+      let dataFimMs = Infinity;
+
+      if (dataInicio) {
+          const [year, month, day] = dataInicio.split('-');
+          dataInicioMs = new Date(year, month - 1, day).getTime();
+      }
+      if (dataFim) {
+          const [year, month, day] = dataFim.split('-');
+          const dataFimObj = new Date(year, month - 1, day);
+          dataFimMs = dataFimObj.getTime() + (24 * 60 * 60 * 1000) - 1;
+      }
+
+
+      const listaFiltrada = lista.filter(acao => {
+          // CORREÇÃO: Acesso seguro a dados_completos para prevenir falhas no filtro
+          const dados = acao.dados_completos || {}; 
+          // Uso de || '' para todas as propriedades acessadas na string de busca
+          const fullString = `${dados.tipo || ''} ${dados.marca || ''} ${dados.modelo || ''} ${dados.submodelo || ''} ${dados.ano || ''} ${acao.usuario || ''} ${acao.tipo || ''}`.toLowerCase();
+          
+          const matchTexto = termo.split(" ").every(t => fullString.includes(t));
+          const matchTipo = !tipo || acao.tipo === tipo;
+          const matchUsuario = !usuario || acao.usuario === usuario;
+
+          // Filtro por data
+          const dataAcao = new Date(acao.data).getTime();
+          const matchData = dataAcao >= dataInicioMs && dataAcao <= dataFimMs;
+
+          return matchTexto && matchTipo && matchUsuario && matchData;
+      });
+
+
+      if (listaFiltrada.length === 0) {
+          listaDiv.innerHTML = '<p style="text-align:center; color:var(--muted)">Nenhum registro encontrado com os filtros aplicados.</p>';
           return;
       }
-      
-      let html = data.map((acao) => {
-          const dataFormatada = new Date(acao.data).toLocaleString('pt-BR');
-          const tipo = acao.tipo;
-          const dadosVeiculo = acao.dados_completos || { marca: acao.veiculo_marca, modelo: acao.veiculo_modelo, ano: acao.veiculo_ano };
+
+      listaFiltrada.forEach(acao => {
+          // CORREÇÃO: Acesso seguro a dados_completos para prevenir falhas na renderização
+          const dados = acao.dados_completos || {}; 
           
-          let cor = '#0f172a';
-          if (tipo === 'CADASTRO') cor = 'var(--success)';
-          if (tipo === 'EDICAO') cor = 'var(--btn)';
-          if (tipo === 'EXCLUSAO') cor = 'var(--danger)';
+          const dataFormatada = new Date(acao.data).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'medium' });
+          const isEdicao = acao.tipo === 'EDICAO';
+          const tituloTipo = isEdicao ? 'Edição de Dados' : acao.tipo === 'CADASTRO' ? 'Novo Cadastro' : 'Exclusão de Cadastro';
+          const cor = isEdicao ? '#0ea5a3' : acao.tipo === 'CADASTRO' ? '#10b981' : '#ef4444';
+          const icone = isEdicao ? '✏️' : acao.tipo === 'CADASTRO' ? '➕' : '🗑️';
           
-          const veiculoInfo = `${dadosVeiculo.marca} ${dadosVeiculo.modelo} (${dadosVeiculo.ano})`;
-          
-          return `
-              <div style="border:1px solid #e2e8f0; padding:10px; border-radius:8px; margin-bottom:8px; background: #f8fafc;">
-                  <div style="display:flex; justify-content:space-between; align-items:center;">
-                      <div>
-                          <strong style="color:${cor}; font-size:14px;">${tipo}</strong> | 
-                          <span style="font-size:14px; font-weight:600;">${veiculoInfo}</span><br>
-                          <span style="font-size:12px; color:var(--muted);">Por: ${acao.usuario} em ${dataFormatada}</span>
-                      </div>
-                      <button class="btn btn-sec" style="padding:4px 8px; font-size:12px;" onclick="toggleHistoryDetails('${acao.id}')">👁️ Detalhes</button>
+          const infoAno = (dados.anoFinal && dados.ano) ? `(${dados.ano} a ${dados.anoFinal})` : (dados.ano ? `(${dados.ano})` : '');
+          const infoSub = dados.tipo !== 'rastreador' && dados.submodelo ? ` ${dados.submodelo}` : '';
+
+          const target = dados.tipo === 'rastreador' ? 
+              `${dados.marca || ''} ${dados.modelo || ''}` :
+              `${dados.marca || ''} ${dados.modelo || ''} ${infoAno}${infoSub}`;
+
+          const html = `
+              <div class="wire-item" style="border-bottom: 1px solid #e6eef7; padding: 12px 0;">
+                  <div class="wire-label" style="flex-direction: column; align-items: flex-start;">
+                      <div style="font-size: 14px; font-weight: 700; color: ${cor}; margin-bottom: 4px;">${icone} ${tituloTipo}</div>
+                      <span style="font-size: 15px; color: #0f172a; font-weight: 600;">Veículo/Rastreador: ${target || 'Dados Indisponíveis'}</span>
+                      <span class="small" style="margin-top: 4px;">Por: <strong>${acao.usuario || '-'}</strong> em ${dataFormatada}</span>
                   </div>
-                  
-                  <div id="details-${acao.id}" class="history-details">
-                      ${formatarDetalhesHtml(acao)}
+                  <div>
+                      <button class="btn btn-sec" style="font-size:13px; padding: 8px 12px;" onclick="toggleHistoryDetails('${acao.id}')">Ver Detalhes</button>
                   </div>
               </div>
+              <div id="details-${acao.id}" class="history-details" style="display:none;">
+                  ${isEdicao ? renderComparisonDetails(acao.dados_antigos, dados) : renderFullDetails(acao)}
+                  <p class="small" style="text-align:right; margin-top: 10px;">ID do Registro de Ação: ${acao.id}</p>
+              </div>
           `;
-      }).join('');
-      
-      listaDiv.innerHTML = html;
+          listaDiv.innerHTML += html;
+      });
   }
 
   // Aplica os filtros locais
   window.filtrarHistorico = function() {
-      const termo = $("historySearchInput").value.toLowerCase().trim();
-      const tipo = $("historyTipoSelect").value;
-      const usuario = $("historyUserSelect").value;
-      
-      const dataInicio = $("historyDateStart").value; 
-      const dataFim = $("historyDateEnd").value; 
-
-      let dataInicioMs = 0;
-      let dataFimMs = Infinity; 
-
-      if (dataInicio) {
-          // Cria um objeto Date para o início do dia da data selecionada (para comparação)
-          const [year, month, day] = dataInicio.split('-');
-          dataInicioMs = new Date(year, month - 1, day).getTime();
-      }
-      
-      if (dataFim) {
-          // Cria um objeto Date para o FINAL do dia da data selecionada (para comparação)
-          const [year, month, day] = dataFim.split('-');
-          // Adiciona 24 horas - 1 milissegundo para pegar até o final do dia selecionado
-          const dataFimObj = new Date(year, month - 1, day);
-          dataFimMs = dataFimObj.getTime() + (24 * 60 * 60 * 1000) - 1; 
-      }
-
-      const filteredData = historyData.filter(acao => {
-          // 1. Filtro por Tipo de Ação
-          const matchTipo = !tipo || acao.tipo === tipo;
-
-          // 2. Filtro por Usuário
-          const matchUsuario = !usuario || acao.usuario === usuario;
-
-          // 3. Filtro por Data (INTERVALO)
-          const acaoDateMs = new Date(acao.data).getTime(); 
-          
-          const matchDataInicio = !dataInicio || acaoDateMs >= dataInicioMs;
-          const matchDataFim = !dataFim || acaoDateMs <= dataFimMs;
-          
-          const matchData = matchDataInicio && matchDataFim;
-
-
-          // 4. Filtro por Texto (Veículo ou Detalhe do Fio)
-          const veiculoInfo = `${acao.veiculo_marca} ${acao.veiculo_modelo} ${acao.veiculo_ano} ${acao.dados_completos?.submodelo || ''}`.toLowerCase();
-          
-          let fiaçãoInfo = '';
-          if (acao.dados_completos?.instalacoes) {
-              fiaçãoInfo = acao.dados_completos.instalacoes.map(inst => 
-                  `${inst.nomeLocal} ${inst.localDetalhe} ${inst.positivo} ${inst.negativo} ${inst.posChave} ${inst.bloqueio} ${inst.saida2 || ''} ${inst.entrada1 || ''} ${inst.entrada2 || ''}`
-              ).join(' ').toLowerCase();
-          }
-
-          const fullSearchString = veiculoInfo + fiaçãoInfo;
-          // Usa 'split(" ").every' para busca mais inteligente (todos os termos devem estar presentes)
-          const matchTermo = !termo || termo.split(" ").every(t => fullSearchString.includes(t)); 
-
-          return matchTipo && matchUsuario && matchData && matchTermo;
-      });
-
-      renderHistoricoLista(filteredData);
-  }
-
-
-  // NOVO: Função para buscar o histórico em lotes (paginação)
-  window.fetchHistoryBatch = async function(isInitialLoad = false) {
-    if (isLoadingHistory || (!hasMoreHistory && !isInitialLoad)) return;
-    
-    isLoadingHistory = true;
-    const btn = $("btnCarregarMaisHistorico");
-    const listaDiv = $("historicoLista");
-    const historyEndMessage = $("historyEndMessage");
-    
-    historyEndMessage.style.display = "none";
-    btn.innerText = isInitialLoad ? "Carregando..." : "Carregando mais...";
-    btn.disabled = true;
-    btn.style.display = "block"; 
-
-    try {
-        let q;
-        if (lastVisibleHistoryDoc) {
-            // Se houver um último documento visível, busca a próxima página
-            q = query(historicoAcoesCollection, 
-                orderBy("data", "desc"), 
-                startAfter(lastVisibleHistoryDoc), 
-                limit(HISTORY_BATCH_SIZE));
-        } else {
-            // Primeira busca
-            q = query(historicoAcoesCollection, 
-                orderBy("data", "desc"), 
-                limit(HISTORY_BATCH_SIZE));
-        }
-        
-        const querySnapshot = await getDocs(q);
-        const fetchedBatch = [];
-        const uniqueUsers = new Set(); 
-        
-        querySnapshot.docs.forEach((doc, index) => {
-            const acao = { id: doc.id, ...doc.data() };
-            fetchedBatch.push(acao);
-            historyData.push(acao); 
-            uniqueUsers.add(acao.usuario);
-            
-            // O último documento do lote é o ponto de partida para a próxima busca
-            if (index === querySnapshot.docs.length - 1) {
-                lastVisibleHistoryDoc = doc; 
-            }
-        });
-
-        // 1. Verifica se há mais registros
-        if (fetchedBatch.length < HISTORY_BATCH_SIZE) {
-            hasMoreHistory = false;
-        }
-
-        // 2. Atualiza os filtros de usuário
-        const userSelect = $("historyUserSelect");
-        // Cria um Set de todos os usuários já carregados para evitar duplicatas no select
-        const currentUsers = new Set(Array.from(userSelect.options).map(opt => opt.value).filter(v => v));
-        
-        historyData.forEach(acao => uniqueUsers.add(acao.usuario)); // Adiciona todos os usuários do histórico
-        
-        Array.from(uniqueUsers).sort().forEach(user => {
-            if (!currentUsers.has(user)) {
-                let opt = document.createElement("option");
-                opt.value = user;
-                opt.text = user;
-                userSelect.appendChild(opt);
-            }
-        });
-        
-        // 3. Se for a carga inicial e não houver dados, mostra mensagem
-        if (isInitialLoad && historyData.length === 0) {
-            listaDiv.innerHTML = '<p style="text-align:center; color:var(--muted);">Nenhuma ação registrada ainda.</p>';
-        }
-
-        // 4. Renderiza o histórico (que agora tem o lote antigo + o novo)
-        filtrarHistorico(); 
-        
-        // 5. Atualiza o estado do botão
-        if (hasMoreHistory) {
-            btn.innerText = `Carregar Mais ${HISTORY_BATCH_SIZE} Registros Antigos`;
-            btn.disabled = false;
-        } else {
-            btn.style.display = "none";
-            historyEndMessage.style.display = "block";
-        }
-        
-        if (historyData.length === 0) {
-             btn.style.display = "none";
-        }
-
-    } catch (e) {
-        console.error("Erro ao carregar lote do histórico: ", e);
-        showNotification("Erro ao carregar histórico. Tente novamente.", "error");
-        if (isInitialLoad) {
-             listaDiv.innerHTML = "<p style='color:var(--danger);'>Erro ao carregar histórico.</p>";
-        }
-        btn.innerText = "Erro ao Carregar. Clique para tentar.";
-        btn.disabled = false;
-    } finally {
-        isLoadingHistory = false;
-    }
-}
-
-
-  async function carregarHistorico() {
-      const listaDiv = $("historicoLista");
-      listaDiv.innerHTML = "Carregando histórico...";
-      
-      // Limpa estado para nova busca completa
-      historyData = [];
-      lastVisibleHistoryDoc = null; 
-      hasMoreHistory = true; 
-      
-      // Limpa os filtros
-      $("historySearchInput").value = "";
-      $("historyTipoSelect").value = "";
-      $("historyUserSelect").innerHTML = '<option value="">-- todos --</option>'; // Limpa e adiciona o padrão
-      $("historyDateStart").value = "";
-      $("historyDateEnd").value = ""; 
-      
-      // Chamada para a nova função de fetch em lote (carga inicial)
-      await fetchHistoryBatch(true);
-  }
+      // Como o filtro é local, basta renderizar novamente a lista com os dados já carregados (historyData)
+      renderHistoricoLista(historyData);
+  };
 
   /* ================= CARREGAMENTO INICIAL ================= */
   async function carregarDadosDoFirebase() {
@@ -1317,12 +1271,19 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
       querySnapshot.forEach((doc) => {
         userDB.push({ id: doc.id, ...doc.data() });
       });
-      db = [...userDB]; 
+      db = [...userDB]; // Cópia dos dados para a busca principal
+      
       $("resultado").innerText = "Sistema pronto. Faça sua busca.";
+      
       if($("editarAba").style.display === "block") {
-          popularFiltrosEdicao(db); 
+          // Inicializa os filtros se a aba estiver aberta
+          popularMarcasEdit();
+          popularModelosEdit();
+          popularSubsEdit();
+          popularAnosEdit();
           renderLista();
       }
+
     } catch (e) {
       console.error("Erro ao ler dados: ", e);
       $("resultado").innerText = "Erro ao conectar com servidor.";
@@ -1332,31 +1293,28 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
 
   /* ================= AUTH STATE LISTENER ================= */
   onAuthStateChanged(auth, (user) => {
-      loggedInUser = user; 
-      updateUIAuth(user);
-      carregarDadosDoFirebase(); 
+    loggedInUser = user;
+    updateUIAuth(user);
+    carregarDadosDoFirebase();
   });
 
+
   /* ================= UI FUNCTIONS ================= */
-  
+
   window.abrirCadastro = function() {
     if (!loggedInUser) {
         showNotification("Você precisa estar logado para cadastrar veículos.", "error");
         return;
     }
-    
     editarIndex = null;
     oldVehicleData = null; // Zera o dado antigo
     tempInstalacoes = [];
     renderTempInstalacoes();
     limparCamposInstalacao();
-    
     $("modalTitle").innerText = "Cadastrar novo veículo/rastreador";
-    $("addTipo").value = 'carro'; 
-    handleTipoChange(); 
-    
-    ["addMarca", "addModelo", "addSubmodelo", "addAno"].forEach(id => $(id).value = '');
-    
+    $("addTipo").value = 'carro';
+    handleTipoChange(); // Para popular a marca do tipo 'carro' e ajustar a UI
+    ["addMarca", "addModelo", "addSubmodelo", "addAno", "addAnoFinal"].forEach(id => $(id).value = '');
     $("overlay").style.display = "block";
     $("modal").style.display = "block";
   };
@@ -1365,10 +1323,10 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
     $("overlay").style.display = "none";
     $("modal").style.display = "none";
     editarIndex = null;
-    oldVehicleData = null; 
+    oldVehicleData = null;
     tempInstalacoes = [];
   };
-
+  
   window.abrirEditar = function() {
     if (!loggedInUser) {
         showNotification("Você precisa estar logado para acessar a edição.", "error");
@@ -1376,366 +1334,157 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
     }
     $("editarAba").style.display = "block";
     $("gridPrincipal").style.display = "none";
-    popularFiltrosEdicao(db); 
-    renderLista();
+    
+    // CORREÇÃO: Chama as funções individuais para inicializar os filtros corretamente
+    popularMarcasEdit();
+    popularModelosEdit();
+    popularSubsEdit();
+    popularAnosEdit();
+    
+    renderLista(); 
   };
 
   window.voltarBusca = function() {
     $("editarAba").style.display = "none";
     $("gridPrincipal").style.display = "grid";
+    // Garante que os selects de busca estejam limpos
+    resetBusca();
   };
 
+  function renderTempInstalacoes() {
+    const lista = $("listaInstalacoesAdd");
+    $("countInstalacoes").innerText = tempInstalacoes.length;
+    if (tempInstalacoes.length === 0) {
+      lista.innerHTML = '<div style="text-align:center; color:var(--muted); font-size:13px;">Nenhuma opção adicionada ainda.</div>';
+      return;
+    }
+
+    lista.innerHTML = tempInstalacoes.map((inst, index) => {
+      // Determina se deve usar a formatação de rastreador (se tiver dados auxiliares)
+      const isTrackerFormat = inst.saida2 || inst.entrada2;
+
+      const title = inst.nomeLocal || (isTrackerFormat ? `Rastreador: ${$("addMarca").value} ${$("addModelo").value}` : 'Local não Nomeado');
+      
+      const posChaveLabel = isTrackerFormat ? 'Pós-chave (E1)' : 'Pós-chave';
+      const bloqueioLabel = isTrackerFormat ? 'Bloqueio (S1)' : 'Bloqueio';
+
+      const wireInfoAux = isTrackerFormat ? 
+        `<span style="display:block;">Saida 2: ${inst.saida2 || '-'} | Entrada 2: ${inst.entrada2 || '-'}</span>` : 
+        '';
+
+      return `
+        <div class="install-item">
+          <div>
+            <strong>${title}</strong>
+            <span>Positivo: ${inst.positivo || '-'} | Negativo: ${inst.negativo || '-'}</span>
+            <span style="display:block;">${posChaveLabel}: ${inst.posChave || '-'} | ${bloqueioLabel}: ${inst.bloqueio || '-'}</span>
+            ${wireInfoAux}
+            ${inst.localDetalhe ? `<span style="font-style:italic;">Detalhe: ${inst.localDetalhe}</span>` : ''}
+          </div>
+          <div style="display:flex; gap: 8px;">
+            <button class="btn btn-sec" style="font-size:12px; padding: 6px 10px;" onclick="editarInstalacaoTemp(${index})">Editar</button>
+            <button class="btn btn-danger" style="font-size:12px; padding: 6px 10px;" onclick="removerInstalacaoTemp(${index})">X</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
   function limparCamposInstalacao() {
-    ["addNomeLocal", "addLocalDetalhe", "addPositivo", "addNegativo", "addPosChave", "addBloqueio", "addSaida2", "addEntrada1", "addEntrada2"].forEach(id => $(id).value = "");
+    ["addNomeLocal", "addLocalDetalhe", "addPositivo", "addNegativo", "addPosChave", "addBloqueio", "addSaida2", "addEntrada2"].forEach(id => $(id).value = '');
+    // Remove a flag de edição
+    document.querySelector('#section2Title').innerText = '2. Adicionar Opção de Instalação';
+    document.querySelector('#section2Title').classList.remove('changed-field');
   }
-  
-  // Função para adaptar os campos de instalação
-  function handleTipoChange() {
-    const isRastreador = $("addTipo").value === 'rastreador';
-    $("localDetalheFields").style.display = isRastreador ? 'none' : 'block';
-    $("addSubmodeloWrap").style.display = isRastreador ? 'none' : 'block'; 
-    $("section2Title").innerHTML = isRastreador ? "2. Configuração de Cabos Padrão" : "2. Adicionar Opção de Instalação";
-    $("output1Label").innerText = isRastreador ? "Saida 1 (Bloqueio)" : "Bloqueio";
-    $("trackerSpecificFields").style.display = isRastreador ? 'block' : 'none';
-    preencherAddMarca();
-  }
-  $("addTipo").addEventListener("change", handleTipoChange);
 
-
-  /* ================= LÓGICA DE INSTALAÇÕES (MODAL) ================= */
-  
   window.adicionarInstalacaoNaLista = function() {
     const isRastreador = $("addTipo").value === 'rastreador';
+    
+    // Validação para Rastreador: exige marca e modelo preenchidos na seção 1
     let nome = isRastreador ? `${$("addMarca").value} ${$("addModelo").value}`.trim() : $("addNomeLocal").value.trim();
-    if(!nome || isRastreador && !$("addModelo").value.trim()) { 
-        showNotification(isRastreador ? "Preencha o Modelo do rastreador (Seção 1)." : "Dê um nome para o local (ex: Painel).", "error"); 
-        return; 
+    if(!nome || isRastreador && !$("addModelo").value.trim()) {
+        showNotification(isRastreador ? "Preencha o Modelo do rastreador (Seção 1)." : "Dê um nome para o local (ex: Painel).", "error");
+        return;
     }
     
     const novaInstalacao = {
       nomeLocal: nome,
-      localDetalhe: isRastreador ? '' : $("addLocalDetalhe").value.trim(), 
+      localDetalhe: isRastreador ? '' : $("addLocalDetalhe").value.trim(),
       positivo: $("addPositivo").value.trim(),
       negativo: $("addNegativo").value.trim(),
-      posChave: $("addPosChave").value.trim(),
-      bloqueio: $("addBloqueio").value.trim(), 
+      posChave: $("addPosChave").value.trim(), // Pós-chave / Entrada 1
+      bloqueio: $("addBloqueio").value.trim(), // Bloqueio / Saida 1
+      saida2: $("addSaida2").value.trim(),     // Saida 2
+      entrada2: $("addEntrada2").value.trim()   // Entrada 2
     };
 
-    if (isRastreador) {
-        novaInstalacao.saida2 = $("addSaida2").value.trim();
-        novaInstalacao.entrada1 = $("addEntrada1").value.trim();
-        novaInstalacao.entrada2 = $("addEntrada2").value.trim();
+    // Verifica se está editando uma instalação existente
+    const editIndex = parseInt($("addNomeLocal").dataset.editIndex);
+    if (!isNaN(editIndex)) {
+        tempInstalacoes[editIndex] = novaInstalacao;
+        delete $("addNomeLocal").dataset.editIndex;
+        showNotification("Opção de instalação atualizada!", "success");
+    } else {
+        tempInstalacoes.push(novaInstalacao);
+        showNotification("Opção de instalação adicionada!", "success");
     }
-
-    tempInstalacoes.push(novaInstalacao);
+    
     renderTempInstalacoes();
     limparCamposInstalacao();
-    showNotification("Opção de instalação adicionada!", "success");
+    
+    // Após adicionar/editar, volta o foco para o nome do local
+    if (!isRastreador) {
+        $("addNomeLocal").focus();
+    } else {
+        $("addPositivo").focus();
+    }
   };
 
   window.removerInstalacaoTemp = function(index) {
     tempInstalacoes.splice(index, 1);
     renderTempInstalacoes();
+    limparCamposInstalacao();
+    showNotification("Opção de instalação removida.", "info");
   };
 
   window.editarInstalacaoTemp = function(index) {
-      const item = tempInstalacoes[index];
-      // Adaptar para rastreador se for o caso
-      if ($("addTipo").value === 'rastreador') {
-          // No modo rastreador, o nomeLocal vem do Modelo+Marca, mas não é editável na seção de cabos
-          $("addNomeLocal").value = ''; 
-          $("addLocalDetalhe").value = ''; 
-      } else {
-          $("addNomeLocal").value = item.nomeLocal || '';
-          $("addLocalDetalhe").value = item.localDetalhe || '';
-      }
-      
-      $("addPositivo").value = item.positivo || '';
-      $("addNegativo").value = item.negativo || '';
-      $("addPosChave").value = item.posChave || '';
-      $("addBloqueio").value = item.bloqueio || '';
-
-      if (item.saida2 || item.entrada1 || item.entrada2) {
-          $("addSaida2").value = item.saida2 || '';
-          $("addEntrada1").value = item.entrada1 || '';
-          $("addEntrada2").value = item.entrada2 || '';
-      } else {
-          $("addSaida2").value = '';
-          $("addEntrada1").value = '';
-          $("addEntrada2").value = '';
-      }
-      
-      tempInstalacoes.splice(index, 1);
-      renderTempInstalacoes();
-      showNotification("Dados carregados. Edite e clique em '+ Adicionar' novamente.", "info");
-      if(!item.saida2 && !item.entrada1 && !item.entrada2) $("addNomeLocal").focus();
-  };
-
-  function renderTempInstalacoes() {
-    const container = $("listaInstalacoesAdd");
-    $("countInstalacoes").innerText = tempInstalacoes.length;
+    const item = tempInstalacoes[index];
     
-    if(tempInstalacoes.length === 0) {
-      container.innerHTML = "<div style='text-align:center; color:var(--muted); font-size:13px;'>Nenhuma opção adicionada ainda.</div>";
-      return;
+    // Prepara o formulário para edição
+    $("addNomeLocal").dataset.editIndex = index;
+    const isRastreador = $("addTipo").value === 'rastreador';
+    
+    // Adaptar para rastreador se for o caso
+    if (isRastreador) {
+        // No modo rastreador, o nomeLocal vem do Modelo+Marca, mas não é editável na seção de cabos
+        $("addNomeLocal").value = '';
+        $("addLocalDetalhe").value = '';
+        $("addNomeLocal").disabled = true; // Desabilita para reforçar que não é para editar aqui
+    } else {
+        $("addNomeLocal").value = item.nomeLocal || '';
+        $("addLocalDetalhe").value = item.localDetalhe || '';
+        $("addNomeLocal").disabled = false;
     }
 
-    container.innerHTML = "";
-    tempInstalacoes.forEach((inst, index) => {
-      let div = document.createElement("div");
-      div.className = "install-item";
-      let details = inst.localDetalhe || "Sem detalhes";
-      let title = inst.nomeLocal;
-      
-      if (inst.saida2 || inst.entrada1 || inst.entrada2) {
-          details = `S2: ${inst.saida2 || '-'} | E1: ${inst.entrada1 || '-'} | E2: ${inst.entrada2 || '-'}`;
-          title = "Modelo: " + title;
-      } else {
-          title = "Local: " + title;
-      }
+    $("addPositivo").value = item.positivo || '';
+    $("addNegativo").value = item.negativo || '';
+    $("addPosChave").value = item.posChave || '';
+    $("addBloqueio").value = item.bloqueio || '';
 
-      div.innerHTML = `
-        <div>
-          <strong>${title}</strong>
-          <span>${details}</span>
-        </div>
-        <div style="display:flex; gap:6px;">
-            <button class='btn btn-sec' style="padding:4px 10px; font-size:12px;" onclick="editarInstalacaoTemp(${index})">Editar</button>
-            <button class='btn btn-danger' style="padding:4px 10px; font-size:12px;" onclick="removerInstalacaoTemp(${index})">Excluir</button>
-        </div>
-      `;
-      container.appendChild(div);
-    });
-  }
-
-  /* ================= BUSCA RÁPIDA ================= */
-  const mainInput = $("mainSearchInput");
-  const suggestionsBox = $("mainSuggestions");
-
-  mainInput.addEventListener("input", function() {
-      const val = this.value.toLowerCase().trim();
-      if(val.length < 2) { suggestionsBox.style.display = "none"; return; }
-
-      const terms = val.split(" ");
-      const matches = db.filter(v => {
-          const str = `${v.tipo} ${v.marca} ${v.modelo} ${v.submodelo} ${v.ano}`.toLowerCase();
-          return terms.every(t => str.includes(t));
-      }).slice(0, 8); 
-
-      if(matches.length === 0) {
-           suggestionsBox.style.display = "none";
-           return;
-      }
-
-      suggestionsBox.innerHTML = "";
-      matches.forEach(v => {
-          const div = document.createElement("div");
-          div.className = "suggestion-item";
-          div.innerHTML = `<strong>${v.modelo}</strong> <small>${v.marca} (${v.ano})</small>`;
-          div.onclick = () => {
-              mainInput.value = `${v.marca} ${v.modelo} ${v.ano}`;
-              suggestionsBox.style.display = "none";
-              exibirResultadoDireto(v);
-          };
-          suggestionsBox.appendChild(div);
-      });
-      suggestionsBox.style.display = "block";
-  });
-
-  document.addEventListener("click", (e) => {
-      if(e.target !== mainInput) suggestionsBox.style.display = "none";
-  });
-
-  /* ================= BUSCA INTELIGENTE ================= */
-
-  window.buscar = function() {
-    let {tipoSelect,marcaSelect,modeloSelect,submodeloSelect,anoSelect} = ids();
+    // Adiciona os novos campos auxiliares
+    $("addSaida2").value = item.saida2 || '';
+    $("addEntrada2").value = item.entrada2 || '';
     
-    let r = db.find(v => v.tipo === tipoSelect.value && v.marca === marcaSelect.value && v.modelo === modeloSelect.value
-      && (v.submodelo||"") === submodeloSelect.value && v.ano === anoSelect.value);
+    // Indica que está editando
+    document.querySelector('#section2Title').innerText = '2. EDITANDO Opção de Instalação';
+    document.querySelector('#section2Title').classList.add('changed-field');
     
-    if(!r) { $("resultado").innerHTML = "Nenhum padrão encontrado."; return; }
-    exibirResultadoDireto(r);
+    // Scrolla para o formulário de instalação
+    $("modal").scrollTop = $("section2Title").offsetTop - 20; 
   };
 
-  function exibirResultadoDireto(r) {
-      currentVehicleResult = r;
-      $("seletorLocalWrap").style.display = "none";
-      $("btnEditarResultado").style.display = "none";
-      const isRastreador = r.tipo === 'rastreador';
 
-      let instalacoes = r.instalacoes || [];
-      
-      if(instalacoes.length === 0 && r.local) {
-          instalacoes.push({
-            nomeLocal: "Padrão (Único)",
-            localDetalhe: r.local,
-            positivo: r.positivo,
-            negativo: r.negativo,
-            posChave: r.posChave,
-            bloqueio: r.bloqueio
-          });
-      }
-
-      if(instalacoes.length === 0) {
-          $("resultado").innerHTML = "Veículo cadastrado, mas sem dados de fiação.";
-      } else {
-          const select = $("resultadoLocalSelect");
-          select.innerHTML = "";
-          $("seletorLocalTitle").innerText = isRastreador ? "Modelo: " : "Local de instalação: ";
-
-          instalacoes.forEach((inst, idx) => {
-              let opt = document.createElement("option");
-              opt.value = idx;
-              let title;
-              if (isRastreador) {
-                  title = inst.nomeLocal; 
-              } else {
-                  title = inst.nomeLocal + (inst.localDetalhe ? ` - ${inst.localDetalhe}` : "");
-              }
-              opt.text = title;
-              select.appendChild(opt);
-          });
-
-          $("seletorLocalWrap").style.display = "block";
-          renderizarDetalhesInstalacao(instalacoes[0]);
-
-          select.onchange = () => {
-              renderizarDetalhesInstalacao(instalacoes[select.value]);
-          };
-      }
-
-      const btnDiv = $("btnEditarResultado");
-      if (loggedInUser) {
-          btnDiv.style.display = "block";
-          btnDiv.innerHTML = `<button class='btn btn-sec' onclick="editarVeiculo('${r.id}')">Editar </button>`;
-      }
-  }
-
-  function renderizarDetalhesInstalacao(dados) {
-      const isRastreador = currentVehicleResult && currentVehicleResult.tipo === 'rastreador';
-      let mainLabel;
-      let mainValue;
-      let icon = isRastreador ? '📡' : '📍';
-
-      if (isRastreador) {
-          mainLabel = "Modelo do Rastreador";
-          mainValue = dados.nomeLocal; 
-      } else {
-          mainLabel = "Local de Instalação";
-          mainValue = dados.nomeLocal + (dados.localDetalhe ? ` (${dados.localDetalhe})` : "");
-      }
-      
-      const bloqueioLabel = isRastreador ? "Saida 1 (Bloqueio)" : "Bloqueio";
-      const bloqueioClass = isRastreador ? "poschave-val" : "bloqueio-val"; 
-
-      let html = `<div class="main-title-box">${icon} ${mainLabel}: **${mainValue}**</div>`;
-
-      const renderWireItem = (label, value, valueClass = "") => {
-          if (!value) return '';
-          const displayValue = value.length > 30 ? value.substring(0, 30) + '...' : value;
-          return `
-              <div class="wire-item">
-                  <span class="wire-label">${label}</span>
-                  <span class="wire-value ${valueClass}">${displayValue}</span>
-              </div>
-          `;
-      };
-
-      html += renderWireItem(' Positivo ', dados.positivo, 'positivo-val');
-      html += renderWireItem(' Negativo ', dados.negativo, 'negativo-val');
-      html += renderWireItem(' Pós-chave ', dados.posChave, 'poschave-val');
-      html += renderWireItem(` ${bloqueioLabel}`, dados.bloqueio, bloqueioClass);
-      
-      if (isRastreador) {
-          html += '<div style="margin-top:10px; font-size:14px; font-weight:600; color:#0f766e; border-top: 1px solid #e2e8f0; padding-top: 10px;">Conexões Auxiliares (Opcional)</div>';
-          html += renderWireItem(' Saida 2', dados.saida2);
-          html += renderWireItem(' Entrada 1', dados.entrada1);
-          html += renderWireItem(' Entrada 2', dados.entrada2);
-      }
-      
-      $("resultado").innerHTML = html;
-  }
-
-  window.resetBusca = function() {
-    ["tipoSelect","marcaSelect","modeloSelect","submodeloSelect","anoSelect"].forEach(id => $(id).value = "");
-    ["marcaWrap","modeloWrap","subWrap","anoWrap"].forEach(id => $(id).style.display = "none");
-    $("seletorLocalWrap").style.display = "none";
-    $("btnEditarResultado").style.display = "none"; 
-    $("mainSearchInput").value = "";
-    $("resultado").innerHTML = "Sistema pronto. Faça sua busca.";
-  };
-
-  /* ================= SALVAR, EXCLUIR E EDITAR ================= */
-
- window.editarVeiculo = function(id) {
-    if (!loggedInUser) {
-        showNotification("Você precisa estar logado para EDITAR dados.", "error");
-        return;
-    }
-    const v = userDB.find(x => x.id === id);
-    if(!v) { showNotification('Veículo não encontrado.','error'); return; }
-    
-    editarIndex = id;
-    // NOVO: Armazena o estado anterior (deep copy para evitar modificação)
-    oldVehicleData = JSON.parse(JSON.stringify(v)); 
-
-    $("modalTitle").innerText = "Editar veículo ou rastreador";
-    $("addTipo").value = v.tipo;
-    handleTipoChange(); 
-    $("addMarca").value = v.marca;
-    $("addModelo").value = v.modelo;
-    $("addSubmodelo").value = v.submodelo;
-    $("addAno").value = v.ano;
-    
-    // Converte dados antigos para o novo formato de instalações
-    tempInstalacoes = v.instalacoes || [];
-    
-    if(tempInstalacoes.length === 0 && v.local) {
-            tempInstalacoes.push({
-                nomeLocal: "Instalação Padrão",
-                localDetalhe: v.local,
-                positivo: v.positivo,
-                negativo: v.negativo,
-                posChave: v.posChave,
-                bloqueio: v.bloqueio
-            });
-    }
-
-    renderTempInstalacoes();
-    limparCamposInstalacao();
-
-    $("overlay").style.display = "block";
-    $("modal").style.display = "block";
-};
-
-  window.removerVeiculo = async function(id) {
-      if (!loggedInUser) {
-          showNotification("Você precisa estar logado para EXCLUIR dados.", "error");
-          return;
-      }
-      
-      const veiculoParaExcluir = userDB.find(x => x.id === id);
-
-      if(confirm(`Tem certeza que deseja EXCLUIR permanentemente: ${veiculoParaExcluir.marca} ${veiculoParaExcluir.modelo}?`)) {
-          try {
-              await deleteDoc(doc(dbFirestore, "veiculos", id));
-              
-              if (veiculoParaExcluir) {
-                  // Opcional: Adiciona campos extras ao log para ter o ID
-                  await registrarAcao("EXCLUSAO", { id: id, ...veiculoParaExcluir });
-              }
-              
-              showNotification("Dados excluídos com sucesso.", "success");
-              await carregarDadosDoFirebase();
-          } catch(e) {
-              console.error(e);
-              showNotification("Erro ao excluir dados.", "error");
-          }
-      }
-  };
-
-  $("btnSalvar").onclick = async () => {
+  window.salvarVeiculo = async function() {
     if (!loggedInUser) {
         showNotification("Você precisa estar logado para SALVAR/EDITAR dados.", "error");
         fecharModal();
@@ -1751,125 +1500,187 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
         $("btnSalvar").disabled = false;
         return;
     }
-    
+
     const isRastreador = $("addTipo").value === 'rastreador';
     const submodeloValue = isRastreador ? "" : $("addSubmodelo").value.trim();
-
+    const anoInicial = $("addAno").value.trim();
+    const anoFinal = $("addAnoFinal").value.trim();
+    
+    // Validação básica do ano
+    if (anoFinal && parseInt(anoFinal) < parseInt(anoInicial)) {
+         showNotification("O Ano Final não pode ser menor que o Ano Inicial.", "error");
+         $("btnSalvar").innerText = "Salvar Veículo Completo";
+         $("btnSalvar").disabled = false;
+         return;
+    }
+    
     const v = {
       tipo: $("addTipo").value,
       marca: $("addMarca").value,
       modelo: $("addModelo").value.trim(),
-      submodelo: submodeloValue, 
-      ano: $("addAno").value.trim(),
+      submodelo: submodeloValue,
+      ano: anoInicial,
+      anoFinal: anoFinal, // Novo campo
       instalacoes: tempInstalacoes
     };
 
     if(!v.tipo || !v.marca || !v.modelo || !v.ano) {
-      showNotification("Preencha Tipo, Marca, Modelo e Ano.", "error");
-      $("btnSalvar").innerText = "Salvar Veículo Completo";
-      $("btnSalvar").disabled = false;
-      return;
+        showNotification("Preencha Tipo, Marca, Modelo e Ano.", "error");
+        $("btnSalvar").innerText = "Salvar Veículo Completo";
+        $("btnSalvar").disabled = false;
+        return;
     }
 
     try {
       if (editarIndex) {
         await updateDoc(doc(dbFirestore, "veiculos", editarIndex), v);
         // NOVO: Passa o oldVehicleData para o histórico
-        await registrarAcao("EDICAO", { id: editarIndex, ...v }, oldVehicleData); 
+        await registrarAcao("EDICAO", { id: editarIndex, ...v }, oldVehicleData);
         showNotification("Dados atualizados!", "success");
       } else {
         const docRef = await addDoc(veiculosCollection, v);
         await registrarAcao("CADASTRO", { id: docRef.id, ...v });
         showNotification("Dados cadastrados!", "success");
       }
+      
       await carregarDadosDoFirebase();
       fecharModal();
+
     } catch (e) {
       console.error("Erro ao salvar: ", e);
       showNotification("Erro ao salvar no servidor.", "error");
     } finally {
-      $("btnSalvar").innerText = "Salvar Veículo Completo";
+      $("btnSalvar").innerText = "Salvar Veículo ou Rastreador Completo";
       $("btnSalvar").disabled = false;
       oldVehicleData = null; // Limpa o dado antigo após salvar
     }
   };
 
+
   /* ================= FUNÇÕES AUXILIARES DE OPÇÕES/SELECT ================= */
-  
+
   function addOpt(id,v){
     let o = document.createElement("option");
-    o.value = v; o.text = v;
+    o.value = v;
+    o.text = v;
     $(id).appendChild(o);
   }
-  
+
   function clearOptions(id, placeholder){
-    const el = $(id); if(!el) return; el.innerHTML = "";
-    let o = document.createElement('option'); o.value = ''; o.text = placeholder || '-- todos --';
+    const el = $(id);
+    if(!el) return;
+    el.innerHTML = "";
+    let o = document.createElement('option');
+    o.value = "";
+    o.text = placeholder || "-- selecione --";
     el.appendChild(o);
   }
 
-  function resetCascata(ids){
-    ids.forEach(n => { const el = $(n+"Select"); if(el) clearOptions(n+"Select", "-- selecione --"); });
-  }
-
-  function ids(){
-    return {
-      tipoSelect: $("tipoSelect"), marcaSelect: $("marcaSelect"),
-      modeloSelect: $("modeloSelect"), submodeloSelect: $("submodeloSelect"), anoSelect: $("anoSelect")
-    };
-  }
-
-  function preencherAddMarca(){
-    const t = $("addTipo").value;
-    clearOptions("addMarca", "-- selecione --");
-    marcas[t].forEach(m=>addOpt("addMarca",m));
-  }
-
-  /* ================= CASCATA BUSCA PRINCIPAL ================= */
-  
-  $("tipoSelect").addEventListener("change",()=>{
+  // FIX: Lógica ajustada para separar a visibilidade dos campos do modal da busca principal
+  function handleTipoChange() {
     resetCascata(["marca","modelo","submodelo","ano"]);
-    ["subWrap","modeloWrap","anoWrap"].forEach(id => $(id).style.display = "none");
+    const tipo = $("tipoSelect").value || $("addTipo").value; // Usa o tipo do select que estiver ativo
+    
+    if (tipo) {
+        const isRastreador = tipo === 'rastreador';
+        const selectId = $("tipoSelect").value ? "marcaSelect" : "addMarca";
+        
+        // Popula a marca (comum a busca e modal)
+        const marcasLista = marcas[tipo] || [];
+        clearOptions(selectId);
+        marcasLista.forEach(m => addOpt(selectId, m));
 
-    if($("tipoSelect").value){
-      $("marcaWrap").style.display="block";
-      clearOptions("marcaSelect", "-- selecione --");
-      marcas[$("tipoSelect").value].forEach(m=>addOpt("marcaSelect",m));
+        // 1. Lógica para a ABA DE BUSCA PRINCIPAL
+        if ($("tipoSelect").value) {
+            $("marcaWrap").style.display = "block";
+            $("subWrap").style.display = "none"; // Na busca, submodelo só aparece depois
+            $("anoWrap").style.display = "none";
+        } 
+        
+        // 2. Lógica para o MODAL (Cadastro/Edição) - Garante que os elementos existem antes de manipular
+        if ($("addTipo")) { 
+            
+            // NOVO: Controle de layout do grid de submodelo/ano (section 1)
+            const vehicleDetailsGrid = $("vehicleDetailsGrid");
+            if (vehicleDetailsGrid) {
+                if (isRastreador) {
+                    $("addSubmodeloWrap").style.display = "none";
+                    // Altera o layout para que a seção de ano ocupe a largura total
+                    vehicleDetailsGrid.style.gridTemplateColumns = "1fr"; 
+                } else {
+                    $("addSubmodeloWrap").style.display = "block";
+                    // Volta o layout para duas colunas
+                    vehicleDetailsGrid.style.gridTemplateColumns = "1fr 1fr"; 
+                }
+            }
+            
+            // NOVO: Controle dos campos de instalação (Section 2)
+            const auxConnectionsGrid = $("auxConnectionsGrid");
+            const labelPosChave = $("labelPosChave");
+            const labelBloqueio = $("labelBloqueio");
+            
+            $("localDetalheFields").style.display = isRastreador ? "none" : "block";
+
+            if (isRastreador) {
+                // ATUALIZAÇÃO DOS RÓTULOS CONFORME PEDIDO
+                labelPosChave.innerText = "Pós-chave (Entrada 1)";
+                labelBloqueio.innerText = "Bloqueio (Saida 1)";
+                
+                auxConnectionsGrid.style.display = "grid";
+                $("labelSaida2").innerText = "Saida 2";
+                $("labelEntrada2").innerText = "Entrada 2";
+            } else {
+                labelPosChave.innerText = "Pós-chave";
+                labelBloqueio.innerText = "Bloqueio";
+                
+                auxConnectionsGrid.style.display = "none";
+                
+                // Limpa os campos auxiliares ao mudar de Rastreador
+                $("addSaida2").value = "";
+                $("addEntrada2").value = "";
+            }
+        }
+
+    } else {
+        resetCascata(["marca","modelo","submodelo","ano"]);
+        $("marcaWrap").style.display = "none";
     }
-  });
+  }
+
+  function resetCascata(steps){
+    steps.forEach(s=>{
+      if(s==='marca'){ clearOptions("marcaSelect","-- selecione --"); $("marcaWrap").style.display="none"; }
+      if(s==='modelo'){ clearOptions("modeloSelect","-- selecione --"); $("modeloWrap").style.display="none"; }
+      if(s==='submodelo'){ clearOptions("submodeloSelect","-- selecione --"); $("subWrap").style.display="none"; }
+      if(s==='ano'){ clearOptions("anoSelect","-- selecione --"); $("anoWrap").style.display="none"; }
+    });
+  }
+  
+  // Adiciona o listener para o Tipo no Modal
+  $("addTipo").addEventListener("change", handleTipoChange);
+
+
+  /* ================= LÓGICA DE FILTRO EM CASCATA - BUSCA PRINCIPAL ================= */
+
+  $("tipoSelect").addEventListener("change", handleTipoChange);
 
   $("marcaSelect").addEventListener("change",()=>{
-    const isRastreador = $("tipoSelect").value === 'rastreador';
-
+    const {tipoSelect,marcaSelect} = ids();
     resetCascata(["modelo","submodelo","ano"]);
-
-    let {tipoSelect,marcaSelect}=ids();
-    let modelos=[...new Set(db.filter(v=>v.tipo===tipoSelect.value&&v.marca===marcaSelect.value).map(v=>v.modelo))];
+    $("modeloWrap").style.display="block";
     
-    if(modelos.length){
-      $("modeloWrap").style.display="block";
-      clearOptions("modeloSelect", "-- selecione --");
-      modelos.forEach(v=>addOpt("modeloSelect",v));
-    }
-
-    if(isRastreador) {
-        $("subWrap").style.display = "none";
-        if(modelos.length) { popularAnos(tipoSelect.value,marcaSelect.value,"",""); }
-    } else {
-        $("subWrap").style.display = "none"; 
-    }
+    const modelos = [...new Set(db.filter(v=>v.tipo===tipoSelect.value&&v.marca===marcaSelect.value).map(v=>v.modelo))];
+    modelos.sort().forEach(m=>addOpt("modeloSelect",m));
   });
 
   $("modeloSelect").addEventListener("change",()=>{
-    const isRastreador = $("tipoSelect").value === 'rastreador';
-    
+    const {tipoSelect,marcaSelect,modeloSelect} = ids();
     resetCascata(["submodelo","ano"]);
-    let {tipoSelect,marcaSelect,modeloSelect}=ids();
-
-    if(isRastreador) {
+    
+    // Se for rastreador, não tem submodelo, vai direto para o ano
+    if (tipoSelect.value === 'rastreador') {
         $("subWrap").style.display="none";
         popularAnos(tipoSelect.value,marcaSelect.value,modeloSelect.value,"");
-
     } else {
         let subs=[...new Set(db.filter(v=>v.tipo===tipoSelect.value&&v.marca===marcaSelect.value&&v.modelo===modeloSelect.value).map(v=>v.submodelo).filter(s=>s))];
         
@@ -1888,6 +1699,7 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
     popularAnos($("tipoSelect").value,$("marcaSelect").value,$("modeloSelect").value,$("submodeloSelect").value);
   });
 
+  // ATUALIZADO: Lógica para popular anos considerando o intervalo
   function popularAnos(t,m,mo,s){
     resetCascata(["ano"]);
     $("anoWrap").style.display="block";
@@ -1895,125 +1707,172 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
     const filteredDb = db.filter(v => 
         v.tipo === t && 
         v.marca === m && 
-        v.modelo === mo &&
+        v.modelo === mo && 
         (t === 'rastreador' || !s || v.submodelo === s) 
     );
     
-    [...new Set(filteredDb.map(v=>v.ano))]
-    .sort().forEach(a=>addOpt("anoSelect",a));
+    let anosDisponiveis = new Set();
+    
+    filteredDb.forEach(v => {
+        // Adiciona o ano inicial
+        anosDisponiveis.add(parseInt(v.ano));
+        // Se tiver anoFinal, adiciona todo o intervalo
+        if(v.anoFinal) {
+            for(let i = parseInt(v.ano) + 1; i <= parseInt(v.anoFinal); i++) {
+                anosDisponiveis.add(i);
+            }
+        }
+    });
+    
+    // Converte para array, ordena e popula o select
+    Array.from(anosDisponiveis).sort((a,b) => a - b).forEach(a => addOpt("anoSelect", a));
   }
 
 
-  /* ================= FILTROS LISTA DE EDIÇÃO - LÓGICA CORRIGIDA ================= */
-  
-  function popularFiltrosEdicao(data) {
+  /* ================= FILTROS LISTA DE EDIÇÃO - CORRIGIDO ================= */
+  // OBS: Funções separadas para não "resetar" o campo que o usuário acabou de selecionar.
+
+  function popularMarcasEdit() {
     const tipo = $("editTipo").value;
+    const marcasLista = [...new Set(userDB.filter(v => !tipo || v.tipo === tipo).map(v => v.marca))];
+    clearOptions("editMarca", "-- todos --");
+    marcasLista.sort().forEach(m => addOpt("editMarca", m));
+  }
+
+  function popularModelosEdit() {
+    const tipo = $("editTipo").value;
+    const marca = $("editMarca").value;
+    const modelosLista = [...new Set(userDB.filter(v => (!tipo || v.tipo === tipo) && (!marca || v.marca === marca)).map(v => v.modelo))];
+    clearOptions("editModelo", "-- todos --");
+    modelosLista.sort().forEach(m => addOpt("editModelo", m));
+  }
+
+  function popularSubsEdit() {
+    const tipo = $("editTipo").value;
+    
+    // Oculta Submodelo se for Rastreador
+    if(tipo === 'rastreador') {
+         $("editSubWrap").style.display = 'none';
+         return;
+    }
+    $("editSubWrap").style.display = 'block';
+
     const marca = $("editMarca").value;
     const modelo = $("editModelo").value;
 
-    // 1. Oculta Submodelo se for Rastreador
-    $("editSubWrap").style.display = tipo === 'rastreador' ? 'none' : 'block';
-
-    // 2. Popula Marca (baseado no Tipo)
-    const currentMarca = $("editMarca").value;
-    clearOptions("editMarca");
-    const marcasUn = [...new Set(data.filter(v => !tipo || v.tipo === tipo).map(v => v.marca))].sort();
-    marcasUn.forEach(v => addOpt('editMarca', v));
-    $("editMarca").value = currentMarca; 
-    
-    // 3. Popula Modelo (baseado no Tipo e Marca)
-    const currentModelo = $("editModelo").value;
-    clearOptions("editModelo");
-    const modelosUn = [...new Set(data.filter(v => 
+    const submodelosLista = [...new Set(userDB.filter(v => 
         (!tipo || v.tipo === tipo) && 
-        (!marca || v.marca === marca)
-    ).map(v => v.modelo))].sort();
-    modelosUn.forEach(v => addOpt('editModelo', v));
-    $("editModelo").value = currentModelo;
-
-    // 4. Popula Submodelo (baseado em Tipo, Marca e Modelo - exceto Rastreador)
-    const currentSub = $("editSub").value;
-    clearOptions("editSub");
-    if (tipo !== 'rastreador') {
-        const subsUn = [...new Set(data.filter(v =>
-            v.submodelo && 
-            (!tipo || v.tipo === tipo) && 
-            (!marca || v.marca === marca) &&
-            (!modelo || v.modelo === modelo)
-        ).map(v => v.submodelo))].sort();
-        subsUn.forEach(v => addOpt('editSub', v));
-    }
-    $("editSub").value = currentSub;
-
-    // 5. Popula Ano (baseado em todos os filtros anteriores)
-    popularAnosEdicao();
+        (!marca || v.marca === marca) && 
+        (!modelo || v.modelo === modelo)
+    ).map(v => v.submodelo).filter(s => s))];
+    
+    clearOptions("editSub", "-- todos --");
+    submodelosLista.sort().forEach(s => addOpt("editSub", s));
   }
 
-  function popularAnosEdicao() {
+  function popularAnosEdit() {
     const tipo = $("editTipo").value;
     const marca = $("editMarca").value;
     const modelo = $("editModelo").value;
     const sub = $("editSub").value;
-    const currentAno = $("editAno").value;
-
-    clearOptions("editAno");
-
-    const anosUn = [...new Set(userDB.filter(v => 
+    
+    const filteredDb = userDB.filter(v => 
         (!tipo || v.tipo === tipo) &&
         (!marca || v.marca === marca) &&
         (!modelo || v.modelo === modelo) &&
-        (tipo === 'rastreador' || !sub || v.submodelo === sub) 
-    ).map(v => v.ano))].sort();
+        (tipo === 'rastreador' || !sub || v.submodelo === sub)
+    );
 
-    anosUn.forEach(v => addOpt('editAno', v));
-    $("editAno").value = currentAno;
+    let anosDisponiveis = new Set();
+    
+    filteredDb.forEach(v => {
+        anosDisponiveis.add(parseInt(v.ano));
+        if(v.anoFinal) {
+            for(let i = parseInt(v.ano) + 1; i <= parseInt(v.anoFinal); i++) {
+                anosDisponiveis.add(i);
+            }
+        }
+    });
+
+    const anosLista = Array.from(anosDisponiveis);
+    clearOptions("editAno", "-- todos --");
+    anosLista.sort((a,b) => a - b).forEach(a => addOpt("editAno", a));
   }
-  
+
+  // --- ATUALIZAÇÃO AQUI: BUSCA RÁPIDA COM INTERVALO DE ANOS ---
   window.filtrarEdicao = function() {
-    const termo = $("editSearchInput").value.toLowerCase().trim();
+    const rawVal = $("editSearchInput").value.toLowerCase().trim();
+
+    // 1. Detecta se existe um ano na busca (Ex: 2015)
+    const yearMatch = rawVal.match(/\b(19|20)\d{2}\b/);
+    const searchYear = yearMatch ? parseInt(yearMatch[0]) : null;
+
+    // 2. Separa os termos de texto (remove o ano da busca textual)
+    let textVal = rawVal;
+    if(searchYear) textVal = textVal.replace(yearMatch[0], "").trim();
+    const terms = textVal.split(" ").filter(t => t.length > 0);
+
     const tipo = $("editTipo").value;
     const marca = $("editMarca").value;
     const modelo = $("editModelo").value;
     const sub = $("editSub").value;
     const ano = $("editAno").value;
-    
-    let lista = userDB.filter(v => {
-      const fullString = `${v.marca} ${v.modelo} ${v.submodelo} ${v.ano}`.toLowerCase();
-      const matchTexto = !termo || termo.split(" ").every(t => fullString.includes(t));
 
-      const matchTipo = !tipo || v.tipo === tipo;
-      const matchMarca = !marca || v.marca === marca;
-      const matchModelo = !modelo || v.modelo === modelo;
-      const matchSub = !sub || v.submodelo === sub;
-      const matchAno = !ano || v.ano === ano;
+    const lista = userDB.filter(v => {
+        // Verifica Intervalo de Anos (Se um ano foi digitado)
+        if (searchYear) {
+            const vInicio = parseInt(v.ano);
+            const vFim = v.anoFinal ? parseInt(v.anoFinal) : vInicio;
+            if (searchYear < vInicio || searchYear > vFim) return false;
+        }
 
-      return matchTexto && matchTipo && matchMarca && matchModelo && matchSub && matchAno;
+        // Verifica Texto nos campos principais
+        const fullString = `${v.tipo} ${v.marca} ${v.modelo} ${v.submodelo || ''} ${v.instalacoes.map(i => `${i.nomeLocal} ${i.localDetalhe} ${i.positivo} ${i.negativo} ${i.posChave} ${i.bloqueio}`).join(' ')}`.toLowerCase();
+        const matchTexto = terms.every(t => fullString.includes(t));
+        
+        // Filtros dos Selects
+        const matchTipo = !tipo || v.tipo === tipo;
+        const matchMarca = !marca || v.marca === marca;
+        const matchModelo = !modelo || v.modelo === modelo;
+        const matchSub = !sub || v.submodelo === sub;
+        const matchAno = !ano || (v.ano === ano || (v.anoFinal && ano >= v.ano && ano <= v.anoFinal)); // Filtra se o ano está no range
+        
+        return matchTexto && matchTipo && matchMarca && matchModelo && matchSub && matchAno;
     });
 
     renderLista(lista);
   };
 
-  // Listeners de filtro para atualizar a cascata E filtrar a lista.
-  $("editTipo").onchange = () => { 
+  // NOVOS LISTENERS (CORRIGIDO PARA NÃO RESETAR A PRÓPRIA SELEÇÃO)
+  $("editTipo").onchange = () => {
       clearOptions("editMarca"); clearOptions("editModelo"); clearOptions("editSub"); clearOptions("editAno");
-      popularFiltrosEdicao(userDB); 
+      popularMarcasEdit();
+      // O reset das opções abaixo será feito implicitamente pois seus valores serão invalidados ou resetados pelos populates subsequentes
+      popularModelosEdit();
+      popularSubsEdit();
+      popularAnosEdit();
       filtrarEdicao(); 
-  }; 
+  };
   
-  $("editMarca").onchange = () => { 
+  $("editMarca").onchange = () => {
+      // NÃO limpa editMarca aqui, senão perde a seleção
       clearOptions("editModelo"); clearOptions("editSub"); clearOptions("editAno");
-      popularFiltrosEdicao(userDB); 
+      popularModelosEdit();
+      popularSubsEdit();
+      popularAnosEdit();
       filtrarEdicao(); 
   };
   
   $("editModelo").onchange = () => { 
+      // NÃO limpa editModelo aqui
       clearOptions("editSub"); clearOptions("editAno");
-      popularFiltrosEdicao(userDB); 
+      popularSubsEdit();
+      popularAnosEdit();
       filtrarEdicao(); 
   };
   
   $("editSub").onchange = () => { 
-      popularAnosEdicao(); 
+      popularAnosEdit(); 
       filtrarEdicao(); 
   }; 
   
@@ -2025,25 +1884,372 @@ select,input{width:100%;padding:10px 12px;margin-top:6px;border-radius:10px;bord
     lista = lista || userDB;
     let c = $("listaVeiculos"); c.innerHTML = "";
     if(!lista.length){ c.innerHTML = "<i>Nenhum veículo encontrado</i>"; return; }
+    
+    const sortKey = $("editTipo").value === 'rastreador' ? 'marca' : 'modelo';
+    lista.sort((a, b) => a[sortKey].localeCompare(b[sortKey]));
+    
     lista.forEach((v) => {
       let d = document.createElement("div");
       d.style = "padding:10px 0;border-bottom:1px solid #ddd;";
       let qtdOpcoes = v.instalacoes ? v.instalacoes.length : 1;
       
+      const submodeloInfo = v.tipo !== 'rastreador' && v.submodelo ? ` | ${v.submodelo}` : '';
+      const anoDisplay = v.anoFinal ? `${v.ano} a ${v.anoFinal}` : v.ano;
+
       d.innerHTML = `
       <div style='display:flex;align-items:center;justify-content:space-between'>
         <div>
-           <strong>${v.marca} ${v.modelo}</strong> (${v.ano})<br>
-           <span style="font-size:12px;color:#666">${qtdOpcoes} local(is) ${v.submodelo && v.tipo !== 'rastreador' ? '| '+v.submodelo : ''}</span>
+           <strong>${v.marca} ${v.modelo}</strong> (${anoDisplay})${submodeloInfo}<br>
+           <span style="font-size:12px;color:#666">${qtdOpcoes} local(is) ${v.tipo === 'rastreador' ? 'de rastreador' : 'de veículo'}</span>
         </div>
-        <div style="display:flex; gap:8px;">
-            <button class='btn btn-sec' onclick="editarVeiculo('${v.id}')">Editar</button>
-            <button class='btn btn-danger' onclick="removerVeiculo('${v.id}')">Excluir</button>
+        <div style="display:flex; gap: 8px;">
+            <button class="btn btn-primary" style="padding:6px 12px; font-size:13px;" onclick="editarVeiculo('${v.id}')">Editar</button>
+            <button class="btn btn-danger" style="padding:6px 12px; font-size:13px;" onclick="excluirVeiculo('${v.id}')">Excluir</button>
         </div>
-      </div>`;
+      </div>
+      `;
       c.appendChild(d);
     });
   }
+
+  /* ================= BUSCA RÁPIDA E RESULTADO ================= */
+
+  function ids(){
+    return {
+      tipoSelect: $("tipoSelect"),
+      marcaSelect: $("marcaSelect"),
+      modeloSelect: $("modeloSelect"),
+      submodeloSelect: $("submodeloSelect"),
+      anoSelect: $("anoSelect")
+    };
+  }
+  
+  // Autocomplete para busca rápida
+  const mainInput = $("mainSearchInput");
+  const suggestionsBox = $("mainSuggestions");
+
+  // --- ATUALIZAÇÃO AQUI: BUSCA PRINCIPAL COM INTERVALO DE ANOS ---
+  mainInput.addEventListener("input", function() {
+      const rawVal = this.value.toLowerCase().trim();
+      if(rawVal.length < 2) {
+          suggestionsBox.style.display = "none";
+          return;
+      }
+      
+      // 1. Detecta ano na busca
+      const yearMatch = rawVal.match(/\b(19|20)\d{2}\b/);
+      const searchYear = yearMatch ? parseInt(yearMatch[0]) : null;
+
+      // 2. Separa os termos de texto (remove o ano da busca textual)
+      let textVal = rawVal;
+      if(searchYear) textVal = textVal.replace(yearMatch[0], "").trim();
+      const terms = textVal.split(" ").filter(t => t.length > 0);
+
+      const matches = db.filter(v => {
+          // Verifica Intervalo de Anos
+          if (searchYear) {
+              const vInicio = parseInt(v.ano);
+              const vFim = v.anoFinal ? parseInt(v.anoFinal) : vInicio;
+              if (searchYear < vInicio || searchYear > vFim) return false;
+          }
+
+          // Verifica Texto
+          const anoStr = v.anoFinal ? `${v.ano} a ${v.anoFinal}` : v.ano;
+          const str = `${v.tipo} ${v.marca} ${v.modelo} ${v.submodelo || ''} ${anoStr}`.toLowerCase();
+          return terms.every(t => str.includes(t));
+      }).slice(0, 8); // Limita a 8 sugestões
+
+      if(matches.length === 0) {
+          suggestionsBox.style.display = "none";
+          return;
+      }
+
+      suggestionsBox.innerHTML = "";
+      matches.forEach(v => {
+          const div = document.createElement("div");
+          div.className = "suggestion-item";
+          const subInfo = v.submodelo && v.tipo !== 'rastreador' ? ` | ${v.submodelo}` : '';
+          const anoDisplay = v.anoFinal ? `${v.ano} a ${v.anoFinal}` : v.ano;
+          
+          div.innerHTML = `<strong>${v.marca} ${v.modelo}</strong> <small>(${anoDisplay})${subInfo}</small>`;
+          div.onclick = () => {
+              // Se tiver ano buscado, preenche com ele, senão usa o padrão
+              const displayYear = searchYear ? searchYear : anoDisplay;
+              mainInput.value = `${v.marca} ${v.modelo} ${displayYear}`;
+              suggestionsBox.style.display = "none";
+              exibirResultadoDireto(v);
+          };
+          suggestionsBox.appendChild(div);
+      });
+      suggestionsBox.style.display = "block";
+  });
+
+  document.addEventListener("click", (e) => {
+      if(e.target !== mainInput) suggestionsBox.style.display = "none";
+  });
+
+
+  /* ================= BUSCA INTELIGENTE (ATUALIZADO) ================= */
+
+  window.buscar = function() {
+    let {tipoSelect,marcaSelect,modeloSelect,submodeloSelect,anoSelect} = ids();
+    
+    // ATUALIZADO: Filtra o DB considerando o intervalo de anos
+    let resultados = db.filter(v => {
+      const anoBusca = parseInt(anoSelect.value);
+      const anoInicio = parseInt(v.ano);
+      const anoFim = v.anoFinal ? parseInt(v.anoFinal) : anoInicio;
+      
+      const anoMatch = anoBusca >= anoInicio && anoBusca <= anoFim;
+
+      return v.tipo === tipoSelect.value && 
+             v.marca === marcaSelect.value && 
+             v.modelo === modeloSelect.value && 
+             (v.tipo === 'rastreador' || (v.submodelo||"") === submodeloSelect.value) && 
+             anoMatch;
+    });
+
+    if(resultados.length === 0) {
+      $("resultado").innerHTML = "Nenhum padrão encontrado para os filtros selecionados.";
+      $("seletorLocalWrap").style.display = "none";
+      $("btnEditarResultado").style.display = "none";
+      currentVehicleResult = null;
+      return;
+    }
+
+    // Como o filtro em cascata já deve retornar 1 resultado exato, pegamos o primeiro.
+    const r = resultados[0]; 
+    exibirResultadoDireto(r);
+  };
+
+  function exibirResultadoDireto(r) {
+    currentVehicleResult = r;
+    $("seletorLocalWrap").style.display = "none";
+    
+    // Mostra botão de edição se o usuário estiver logado e se for um item salvo no DB (tem id)
+    if(loggedInUser && r.id) {
+        $("btnEditarResultado").style.display = "block";
+        $("btnEditarResultado").innerHTML = `<button class="btn btn-sec" onclick="editarVeiculo('${r.id}')">Editar Padrão</button>`;
+    } else {
+        $("btnEditarResultado").style.display = "none";
+    }
+
+    let instalacoes = r.instalacoes || [];
+
+    // Lógica de fallback para manter compatibilidade com dados antigos que usam campos soltos
+    if(instalacoes.length === 0 && r.local) {
+        instalacoes.push({ 
+            nomeLocal: "Padrão (Único)", 
+            localDetalhe: r.local, 
+            positivo: r.positivo, 
+            negativo: r.negativo, 
+            posChave: r.posChave, 
+            bloqueio: r.bloqueio 
+        });
+    }
+
+    // Se houver mais de uma opção, mostra o seletor
+    if (instalacoes.length > 1) {
+        $("seletorLocalWrap").style.display = "block";
+        const select = $("resultadoLocalSelect");
+        select.innerHTML = "";
+        instalacoes.forEach((inst, index) => {
+            let opt = document.createElement("option");
+            opt.value = index;
+            opt.text = `${inst.nomeLocal} ${inst.localDetalhe ? `(${inst.localDetalhe})` : ''}`;
+            select.appendChild(opt);
+        });
+        
+        // Exibe o resultado da primeira opção por padrão
+        renderResultadoFios(r, instalacoes[0]);
+        
+        // Adiciona o listener para mudança de local
+        select.onchange = function() {
+            renderResultadoFios(r, instalacoes[this.value]);
+        };
+        
+        $("seletorLocalTitle").innerText = `Opção de Local de Instalação (${instalacoes.length} disponíveis):`;
+        
+    } else if (instalacoes.length === 1) {
+        // Se houver apenas uma opção, exibe ela diretamente
+        $("seletorLocalWrap").style.display = "none";
+        renderResultadoFios(r, instalacoes[0]);
+    } else {
+        // Se não houver instalações
+        $("resultado").innerHTML = `
+            <div class="main-title-box">⚠️ Nenhuma informação de instalação cadastrada para **${r.marca} ${r.modelo}**.</div>
+            <p class="small" style="text-align:center;">Tente pesquisar por outro veículo ou contate o administrador.</p>
+        `;
+    }
+  }
+
+  function renderResultadoFios(veiculo, dados) {
+    const isRastreador = veiculo.tipo === 'rastreador';
+    let icon = isRastreador ? '📡' : '🚗';
+    let mainLabel = isRastreador ? 'Rastreador' : 'Veículo';
+    const anoDisplay = veiculo.anoFinal ? `${veiculo.ano} a ${veiculo.anoFinal}` : veiculo.ano;
+    let mainValue = `${veiculo.marca} ${veiculo.modelo} (${anoDisplay})${veiculo.submodelo && !isRastreador ? ` ${veiculo.submodelo}` : ''}`;
+    
+    // Adiciona o nome do local ao título se não for rastreador (o nome do local é o submodelo para rastreadores)
+    if (!isRastreador && dados.nomeLocal) {
+         mainValue += ` - ${dados.nomeLocal}`;
+    }
+    
+    if(dados.localDetalhe) {
+        mainValue += ` (${dados.localDetalhe})`;
+    }
+
+    // NOVOS RÓTULOS
+    const posChaveLabel = isRastreador ? "Pós-chave (Entrada 1)" : "Pós-chave";
+    const bloqueioLabel = isRastreador ? "Bloqueio (Saida 1)" : "Bloqueio";
+    
+    let html = `<div class="main-title-box">${icon} ${mainLabel}: **${mainValue}**</div>`;
+
+    const renderWireItem = (label, value, valueClass = "") => {
+        if (!value) return '';
+        const displayValue = value.length > 30 ? value.substring(0, 30) + '...' : value;
+        return `
+            <div class="wire-item">
+                <span class="wire-label">${label}</span>
+                <span class="wire-value ${valueClass}">${displayValue}</span>
+            </div>
+        `;
+    };
+
+    html += renderWireItem(' Positivo ', dados.positivo, 'positivo-val');
+    html += renderWireItem(' Negativo ', dados.negativo, 'negativo-val');
+    html += renderWireItem(` ${posChaveLabel} `, dados.posChave, 'poschave-val');
+    html += renderWireItem(` ${bloqueioLabel}`, dados.bloqueio, bloqueioLabel.includes('Saida 1') ? 'bloqueio-val' : 'poschave-val'); // Use bloqueio-val se for Saida 1
+
+    if (isRastreador) {
+        html += '<div style="margin-top:10px; font-size:14px; font-weight:600; color:#0f766e; border-top: 1px solid #e2e8f0; padding-top: 10px;">Conexões Auxiliares (Opcional)</div>';
+        html += renderWireItem(' Saida 2', dados.saida2);
+        html += renderWireItem(' Entrada 2', dados.entrada2);
+    }
+    
+    $("resultado").innerHTML = html;
+  }
+
+  window.resetBusca = function() {
+    ["tipoSelect","marcaSelect","modeloSelect","submodeloSelect","anoSelect"].forEach(id => $(id).value = "");
+    ["marcaWrap","modeloWrap","subWrap","anoWrap"].forEach(id => $(id).style.display = "none");
+    $("seletorLocalWrap").style.display = "none";
+    $("btnEditarResultado").style.display = "none";
+    $("mainSearchInput").value = "";
+    $("resultado").innerHTML = "Sistema pronto. Faça sua busca.";
+  };
+
+
+  /* ================= SALVAR, EXCLUIR E EDITAR ================= */
+
+  window.editarVeiculo = function(id) {
+    if (!loggedInUser) {
+        showNotification("Você precisa estar logado para EDITAR dados.", "error");
+        return;
+    }
+    const v = userDB.find(x => x.id === id);
+    if(!v) {
+        showNotification('Veículo não encontrado.','error');
+        return;
+    }
+
+    editarIndex = id;
+    // NOVO: Armazena o estado anterior (deep copy para evitar modificação)
+    oldVehicleData = JSON.parse(JSON.stringify(v));
+    
+    $("modalTitle").innerText = `Editar veículo ou rastreador: ${v.marca} ${v.modelo} (${v.ano})`;
+    
+    // 1. Popula dados básicos
+    $("addTipo").value = v.tipo;
+    handleTipoChange(); // Para ajustar a UI (marcas, campos específicos)
+    
+    const isRastreador = v.tipo === 'rastreador';
+    
+    // Popula as marcas (já populado por handleTipoChange, mas garante que o valor selecionado exista)
+    clearOptions("addMarca");
+    marcas[v.tipo].forEach(m => addOpt("addMarca", m));
+    $("addMarca").value = v.marca;
+
+    $("addModelo").value = v.modelo;
+    $("addSubmodelo").value = v.submodelo;
+    $("addAno").value = v.ano;
+    $("addAnoFinal").value = v.anoFinal || ''; // Novo campo
+    
+    // 2. Popula instalações temporárias
+    tempInstalacoes = v.instalacoes || [];
+    
+    // Lógica de fallback para dados antigos (converte para o novo formato de instalações)
+    if(tempInstalacoes.length === 0 && v.local) {
+        tempInstalacoes.push({ 
+            nomeLocal: "Padrão (Único)", 
+            localDetalhe: v.local, 
+            positivo: v.positivo, 
+            negativo: v.negativo, 
+            posChave: v.posChave, 
+            bloqueio: v.bloqueio 
+        });
+    }
+
+    renderTempInstalacoes();
+    limparCamposInstalacao();
+
+    // 3. Abre o modal
+    $("overlay").style.display = "block";
+    $("modal").style.display = "block";
+    
+    // Se for rastreador, desabilita a edição dos campos que não devem ser alterados
+    if (isRastreador) {
+        // No modo rastreador, Marca, Modelo e Tipo são cruciais e não devem ser alterados levianamente.
+        $("addTipo").disabled = true;
+        $("addMarca").disabled = true;
+        $("addModelo").disabled = true;
+    } else {
+        $("addTipo").disabled = false;
+        $("addMarca").disabled = false;
+        $("addModelo").disabled = false;
+    }
+
+    // Se veio da aba de busca, volta para a aba de busca depois de fechar.
+    if($("editarAba").style.display === "none") {
+        $("modal").onclose = () => { fecharModal(); };
+    } else {
+        // Se veio da aba de edição, mantém a aba de edição (o modal fecha e a lista continua)
+        $("modal").onclose = () => { fecharModal(); renderLista(); };
+    }
+  };
+
+
+  window.excluirVeiculo = async function(id) {
+    if (!loggedInUser) {
+        showNotification("Você precisa estar logado para EXCLUIR dados.", "error");
+        return;
+    }
+    if (!confirm("Tem certeza que deseja EXCLUIR este veículo/rastreador? Esta ação é irreversível.")) {
+        return;
+    }
+
+    const veiculoParaExcluir = userDB.find(v => v.id === id);
+    if (!veiculoParaExcluir) {
+        showNotification("Veículo não encontrado.", "error");
+        return;
+    }
+
+    try {
+        await deleteDoc(doc(dbFirestore, "veiculos", id));
+        
+        // NOVO: Registra a exclusão no histórico
+        await registrarAcao("EXCLUSAO", veiculoParaExcluir);
+
+        showNotification("Veículo/Rastreador excluído com sucesso!", "success");
+        await carregarDadosDoFirebase();
+        filtrarEdicao(); // Atualiza a lista na aba de edição
+        
+    } catch (e) {
+        console.error("Erro ao excluir: ", e);
+        showNotification("Erro ao excluir no servidor.", "error");
+    }
+  };
+
 </script>
 </body>
 </html>
